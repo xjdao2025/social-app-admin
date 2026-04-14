@@ -120,6 +120,8 @@ const apiMap = {
   "POST /admin/proposal/page": defineAPI<APIDao.WebApplicationReqAdminProposalPageReq, APIDao.NetCorePalExtensionsDtoPagedDataOfAdminProposalPageVo>("/admin/proposal/page", "POST"),
   /** 后台下架 */
   "POST /admin/proposal/take-off": defineAPI<APIDao.WebEndpointsAdminProposalAdminTakeOffProposalReq, boolean>("/admin/proposal/take-off", "POST"),
+  /** 后台删除提案评论 */
+  "POST /admin/proposal/delete-comment": defineAPI<APIDao.WebEndpointsAdminProposalAdminDeleteCommentReq, boolean>("/admin/proposal/delete-comment", "POST"),
   /** 下架贴文 */
   "POST /admin/post/take-off-post": defineAPI<APIDao.WebEndpointsAdminPostTakeOffPostReq, boolean>("/admin/post/take-off-post", "POST"),
   /** 创建节点 */

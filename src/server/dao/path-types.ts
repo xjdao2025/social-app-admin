@@ -61,6 +61,7 @@ export type APITypeTuple = {
   "POST /admin/proposal/detail": [APIDao.WebEndpointsAdminProposalAdminProposalDetailReq, APIDao.WebEndpointsAdminProposalAdminProposalDetailVo],
   "POST /admin/proposal/page": [APIDao.WebApplicationReqAdminProposalPageReq, APIDao.NetCorePalExtensionsDtoPagedDataOfAdminProposalPageVo],
   "POST /admin/proposal/take-off": [APIDao.WebEndpointsAdminProposalAdminTakeOffProposalReq, boolean],
+  "POST /admin/proposal/delete-comment": [APIDao.WebEndpointsAdminProposalAdminDeleteCommentReq, boolean],
   "POST /admin/post/take-off-post": [APIDao.WebEndpointsAdminPostTakeOffPostReq, boolean],
   "POST /admin/node/create": [APIDao.WebEndpointsAdminNodeCreateNodeReq, string],
   "POST /admin/node/delete": [APIDao.WebEndpointsAdminNodeDeleteNodeReq, boolean],

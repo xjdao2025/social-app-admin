@@ -1270,6 +1270,14 @@ declare namespace APIDao {
   }
 
 
+  interface WebEndpointsAdminProposalAdminDeleteCommentReq {
+
+    /** 评论 Id */
+    commentId: number;
+
+  }
+
+
   interface WebEndpointsAdminPostTakeOffPostReq {
 
     /** Uri */

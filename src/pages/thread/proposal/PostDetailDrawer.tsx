@@ -1,5 +1,6 @@
 import S from "./index.module.less";
-import { Button, Divider, Drawer, Flex, List, Progress, Typography } from "antd";
+import { Button, Divider, Drawer, Flex, List, Popconfirm, Typography } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import cx from "classnames";
 import { useBoolean, useRequest } from "ahooks";
 import server from "@/server";
@@ -18,7 +19,7 @@ const PostDetailDrawer = (props:
                             }
 ) => {
   const [drawerVis, { toggle, setTrue, setFalse }] = useBoolean(false)
-  const { data: detail } = useRequest(() => server.dao('POST /admin/proposal/detail', {
+  const { data: detail, refresh } = useRequest(() => server.dao('POST /admin/proposal/detail', {
     proposalId: props.proposalId
   }), {
     ready: drawerVis
@@ -36,6 +37,10 @@ const PostDetailDrawer = (props:
     refreshDeps: [detail?.attachId]
   })
 
+  const handleDeleteComment = async (commentId: number) => {
+    await server.dao('POST /admin/proposal/delete-comment', { commentId })
+    refresh()
+  }
 
   return <>
     <Typography.Link onClick={setTrue}>详情</Typography.Link>
@@ -120,8 +125,16 @@ const PostDetailDrawer = (props:
             renderItem={(item) => (
               <List.Item className={S.commentItem}>
                 <div className={S.commentHeader}>
-                  <span className={S.commentUser}>{item.userName}</span>
-                  <span className={S.commentTime}>{dayjs(item.createdAt).format(timeFormat)}</span>
+                  <div className={S.commentMeta}>
+                    <span className={S.commentUser}>{item.userName}</span>
+                    <span className={S.commentTime}>{dayjs(item.createdAt).format(timeFormat)}</span>
+                  </div>
+                  <Popconfirm
+                    title="确定删除该评论？"
+                    onConfirm={() => handleDeleteComment(item.commentId)}
+                  >
+                    <DeleteOutlined className={S.commentDelete} />
+                  </Popconfirm>
                 </div>
                 <div className={S.commentContent}>{item.content}</div>
               </List.Item>
