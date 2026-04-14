@@ -1,5 +1,5 @@
 import S from "./index.module.less";
-import { Button, Divider, Drawer, Flex, Progress, Typography } from "antd";
+import { Button, Divider, Drawer, Flex, List, Progress, Typography } from "antd";
 import cx from "classnames";
 import { useBoolean, useRequest } from "ahooks";
 import server from "@/server";
@@ -110,6 +110,25 @@ const PostDetailDrawer = (props:
           </div>
         </div>
       </div>
+
+      {(detail?.comments?.length || 0) > 0 && (
+        <div className={S.commentWrap}>
+          <p className={S.title}>评论</p>
+          <List
+            className={S.commentList}
+            dataSource={detail?.comments}
+            renderItem={(item) => (
+              <List.Item className={S.commentItem}>
+                <div className={S.commentHeader}>
+                  <span className={S.commentUser}>{item.userName}</span>
+                  <span className={S.commentTime}>{dayjs(item.createdAt).format(timeFormat)}</span>
+                </div>
+                <div className={S.commentContent}>{item.content}</div>
+              </List.Item>
+            )}
+          />
+        </div>
+      )}
     </Drawer>
   </>
 }

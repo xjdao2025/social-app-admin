@@ -44,6 +44,53 @@
       }
     }
   }
+
+  .commentWrap {
+    border-top: 1px solid #D4DBE2;
+    padding-top: 15px;
+    margin-top: 30px;
+
+    .commentList {
+      :global {
+        .ant-list-item {
+          padding: 12px 0;
+          border-bottom: 1px solid #E9E9E9;
+        }
+        .ant-list-item:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+
+    .commentItem {
+      display: block;
+    }
+
+    .commentHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .commentUser {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1B293D;
+    }
+
+    .commentTime {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .commentContent {
+      font-size: 14px;
+      color: #333;
+      line-height: 22px;
+      word-break: break-all;
+    }
+  }
   :global {
     .ant-drawer-header {
       padding: 18px 20px 18px 10px;

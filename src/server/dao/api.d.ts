@@ -625,6 +625,23 @@ declare namespace APIDao {
   }
 
 
+  interface ProposalCommentVo {
+
+    /** 评论Id */
+    commentId: number;
+
+    /** 评论用户名称 */
+    userName: string;
+
+    /** 评论内容 */
+    content: string;
+
+    /** 创建时间 {"format":"date-time"} */
+    createdAt: string;
+
+  }
+
+
   /** POST /proposal/detail */
   interface WebEndpointsProposalProposalDetailVo {
 
@@ -671,6 +688,9 @@ declare namespace APIDao {
 
     /** 创建时间 {"format":"date-time"} */
     createdAt: string;
+
+    /** 评论列表 */
+    comments: Array<ProposalCommentVo>;
 
   }
 
@@ -1195,6 +1215,9 @@ declare namespace APIDao {
 
     /** 创建时间 {"format":"date-time"} */
     createdAt: string;
+
+    /** 评论列表 */
+    comments: Array<ProposalCommentVo>;
 
   }
 
