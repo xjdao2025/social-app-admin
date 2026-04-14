@@ -79,6 +79,7 @@ function ChainHashInner(props: ChainHashProps & { hash: NonNullable<ChainHashPro
     <TypoText
       copyable={copyable === true ? { text: hash } : false}
       qrcode={qrcode === true}
+      title={hash}
     >
       <Tooltip title={tooltipContent}>
         {url ? <a href={url} target={'_blank'}>{displayHash}</a> : <span className={styles.hash}>{displayHash}</span>}

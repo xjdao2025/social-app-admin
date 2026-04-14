@@ -16,13 +16,16 @@ export default function TypoText(props: TypoTextProps) {
   const { title, qrcode, ...restProps } = props;
 
   const contentStr = useMemo(() => {
-    const mayContent = typeof restProps.copyable === 'object' ? restProps.copyable.text : restProps.children;
-    if(typeof mayContent !== 'string') {
+    let mayContent = typeof restProps.copyable === 'object' ? restProps.copyable.text : restProps.children;
+    if (typeof mayContent !== 'string') {
+      mayContent = title;
+    }
+    if (typeof mayContent !== 'string') {
       console.error("TypoText: 接收到非字符串数据", mayContent);
       return '';
     }
     return mayContent;
-  }, [restProps.copyable, restProps.children])
+  }, [restProps.copyable, restProps.children, title])
 
   return (
     <>
