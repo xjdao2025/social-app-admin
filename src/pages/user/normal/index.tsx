@@ -6,6 +6,7 @@ import { Popconfirm, Typography } from "antd";
 import server from "@/server";
 import { useRef, useState } from "react";
 import { ActionType } from "@ant-design/pro-table/es/typing";
+import dayjs from "dayjs";
 
 const UserNormal = () => {
   const actionRef = useRef<ActionType>()
@@ -44,6 +45,8 @@ const UserNormal = () => {
     proColumn('手机号', 'phone', { width: 125 })._enableSearch(),
     proColumn('邮箱', 'email', { width: 125 })._enableSearch(),
     proColumn('稻米', 'score', { width: 80 }),
+    proColumn('创建时间', 'createdAt', { width: 180 })
+      ._render((_, record) => dayjs(record.createdAt).format('YYYY-MM-DD HH:mm:ss')),
     proColumn('操作', 'opt', { width: 100 })
       ._option()
       ._render((_, record) => {

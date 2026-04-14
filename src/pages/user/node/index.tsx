@@ -7,6 +7,7 @@ import AddNodeUser from "./AddNodeUser.tsx";
 import server from "@/server";
 import { useRef, useState } from "react";
 import { ActionType } from "@ant-design/pro-table/es/typing";
+import dayjs from "dayjs";
 import CreditsDetail from './CreditsDetail'
 
 const NodeUser = () => {
@@ -59,6 +60,8 @@ const NodeUser = () => {
           />
         )
       }),
+    proColumn('创建时间', 'createdAt', { width: 180 })
+      ._render((_, record) => dayjs(record.createdAt).format('YYYY-MM-DD HH:mm:ss')),
     proColumn('操作', 'opt', { width: 150 })
       ._option()
       ._render((_, record) => {

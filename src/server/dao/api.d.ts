@@ -1743,6 +1743,8 @@ declare namespace APIDao {
     /** 是否禁用 */
     disable: boolean;
 
+    createdAt: string;
+
   }
 
 
@@ -1771,6 +1773,8 @@ declare namespace APIDao {
 
     /** 是否禁用 */
     disable: boolean;
+
+    createdAt: string;
 
   }
 
