@@ -1926,6 +1926,9 @@ declare namespace APIDao {
     /** 创建时间 {"format":"date-time"} */
     createdAt: string;
 
+    /** 附言 */
+    remark: string;
+
   }
 
 

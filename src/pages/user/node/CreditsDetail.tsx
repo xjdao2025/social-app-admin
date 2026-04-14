@@ -35,6 +35,7 @@ const CreditsDetail = (props: {
           ? <span className="text-[#02B28A]">+{ String(score).replace(/^\+*/, "") }</span>
           : <span className="text-[#FF3030]">-{ String(score).replace(/^-*/, "") }</span>
       }),
+    proColumn('附言', 'remark'),
   ]
 
   return <>
