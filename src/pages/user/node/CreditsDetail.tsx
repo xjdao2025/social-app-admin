@@ -47,7 +47,7 @@ const CreditsDetail = (props: {
       const result = await server.dao('POST /admin/score/user-sore-record-page', {
         userId,
         pageNum: 1,
-        pageSize: 500,
+        pageSize: 1000,
       })
       const items = result?.items || []
       const headers = ['时间', '方式', '用户', '数量', '附言']
@@ -92,7 +92,7 @@ const CreditsDetail = (props: {
         options={ false }
         className={ S.table }
         toolBarRender={() => [
-          <Tooltip title="导出最近500条记录" key="export">
+          <Tooltip title="导出最近1000条记录" key="export">
             <Button loading={exporting} onClick={handleExport}>导出</Button>
           </Tooltip>
         ]}
