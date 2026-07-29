@@ -34,23 +34,53 @@ describe('parseRecipients', () => {
     await expect(parseRecipients(file)).resolves.toEqual(['13800000001'])
   })
 
+  it('只有表头时返回空数组', async () => {
+    readXlsxFile.mockResolvedValue([['手机号']])
+
+    await expect(parseRecipients(file)).resolves.toEqual([])
+  })
+
   it('丢掉空行 —— 粘一列号码末尾常带几个空行', async () => {
     readXlsxFile.mockResolvedValue([['13800000001'], [null], [''], ['   '], [undefined]])
 
     await expect(parseRecipients(file)).resolves.toEqual(['13800000001'])
   })
 
-  it('邮箱、handle、DID 都留下', async () => {
+  it('服务端认的五种写法都留下', async () => {
     readXlsxFile.mockResolvedValue([
+      ['13800000001'],
       ['a@example.com'],
       ['alice.web5.xjdao.xyz'],
       ['did:plc:abc123'],
+      // rice id 最容易被漏掉:13 位小写字母数字,既没有 @ 也没有点
+      ['3ke6kg3wk223e'],
     ])
 
     await expect(parseRecipients(file)).resolves.toEqual([
+      '13800000001',
       'a@example.com',
       'alice.web5.xjdao.xyz',
       'did:plc:abc123',
+      '3ke6kg3wk223e',
+    ])
+  })
+
+  // 名单整列都是 rice id 时,第一个不该被当成表头吃掉
+  it('第一行就是 rice id 时不当表头', async () => {
+    readXlsxFile.mockResolvedValue([['3ke6kg3wk223e'], ['3ke6kg3wk1abc']])
+
+    await expect(parseRecipients(file)).resolves.toEqual(['3ke6kg3wk223e', '3ke6kg3wk1abc'])
+  })
+
+  // 少读一行 = 那个人静默地没收到;多留一行 = 服务端整批拒绝并把它报出来。
+  // 后者可见,前者不可见,所以只丢确定该丢的。
+  it('看不懂的行留着,让服务端去拒绝', async () => {
+    readXlsxFile.mockResolvedValue([['13800000001'], ['这是什么'], ['13800000002']])
+
+    await expect(parseRecipients(file)).resolves.toEqual([
+      '13800000001',
+      '这是什么',
+      '13800000002',
     ])
   })
 

@@ -7,15 +7,24 @@ import readXlsxFile from 'read-excel-file/browser'
  * 服务端不该为了一个功能长出一个表格解析器。所以解析在浏览器里做,
  * **名单文件根本不离开这台机器**。
  *
- * 取第一列。表头(第一行不像联系方式的)会被丢掉,空行也是 ——
- * 从表格里粘一列手机号,末尾常带几个空行。
+ * 取第一列,丢掉空行(从表格里粘一列手机号,末尾常带几个空行),
+ * 以及第一行的表头。
+ *
+ * **除此之外一律原样保留。** 两种错法的代价不对称:多留一行垃圾,服务端会
+ * 整批拒绝并把那一行报出来(全有或全无);少读一行,那个人就**静默地**
+ * 没收到东西,没有任何人会发现。所以这里只丢确定该丢的。
  */
 export async function parseRecipients(file: File): Promise<string[]> {
   const rows = (await readXlsxFile(file)) as unknown[][]
 
-  return rows
-    .map(row => cell(row?.[0]))
-    .filter(value => value !== '' && looksLikeContact(value))
+  const values = rows.map(row => cell(row?.[0])).filter(value => value !== '')
+  const [first, ...rest] = values
+
+  if (first === undefined) return []
+
+  // 第一行不像个标识符就当表头。只对第一行这么判 —— 中间的行看不懂也留着,
+  // 让服务端去说它认不认得。
+  return looksLikeIdentifier(first) ? values : rest
 }
 
 function cell(value: unknown): string {
@@ -26,18 +35,22 @@ function cell(value: unknown): string {
   return String(value).trim()
 }
 
+/** TSID:13 位,字母表去掉了 0/1/8/9 和容易看错的字母。 */
+const TSID = /^[234567abcdefghijklmnopqrstuvwxyz]{13}$/
+
 /**
- * 像不像一个联系方式。
+ * 像不像一个标识符。**只用来判断第一行是不是表头。**
  *
- * 只用来甩掉表头(「手机号」「账号」这类)—— 真正认不认得出这个人由服务端说了算,
- * 而且它是全有或全无的:一个认不出来整批都不发。这里过滤得太狠反而危险,
- * 会把运营真填的东西悄悄吃掉。
+ * 服务端认的五种写法都要认得出来 —— 少认一种,那种写法的名单就会被
+ * 当成表头把第一个人吃掉。rice id 是最容易漏的:13 位小写字母数字,
+ * 既没有 `@` 也没有点,和「账号」这种表头长得一样普通。
  */
-function looksLikeContact(value: string): boolean {
+function looksLikeIdentifier(value: string): boolean {
   if (!value) return false
   if (/^\d{5,20}$/.test(value)) return true // 手机号
   if (value.includes('@')) return true // 邮箱
   if (value.startsWith('did:')) return true // DID
   if (value.includes('.')) return true // handle
+  if (TSID.test(value)) return true // rice id
   return false
 }
