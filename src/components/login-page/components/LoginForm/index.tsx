@@ -5,7 +5,6 @@ import styles from '../../form.module.less';
 import { Button, message, Typography } from "antd";
 import { useState } from "react";
 import StyledProFormCaptcha from "@/components/form/ProFormCaptcha";
-import MaskInteractionVerify from "@/components/InteractionVerify/MaskVerify";
 import useUserInfoStore from "@/store/userInfo";
 import server, { RiceError } from "@/server/rice";
 import { useNavigate } from "@/router";
@@ -32,7 +31,6 @@ export default function LoginForm(props: LoginFormProps) {
   const [toast, toastContext] = useToast();
   const [step, setStep] = useState<1 | 2>(1);
   const [form] = ProForm.useForm();
-  const [robotCheckerVisible, setRobotCheckVisible] = useState(false);
   const { login: systemLogin } = useUserInfoStore();
   const navigator = useNavigate();
 
@@ -52,8 +50,16 @@ export default function LoginForm(props: LoginFormProps) {
         submitter={false}
         requiredMark={false}
         onFinish={async (fields) => {
+          // 第一步:验密码换验证码。密码不对时 rice 不发码,也不告诉你是
+          // 密码错还是账号不存在 —— 区分开就是一个「这个手机号是不是管理员」
+          // 的探测器。
           if (step === 1) {
-            setRobotCheckVisible(true);
+            try {
+              await sendCode();
+              setStep(2);
+            } catch (error) {
+              toast.show((error as RiceError).message);
+            }
             return;
           }
 
@@ -123,21 +129,6 @@ export default function LoginForm(props: LoginFormProps) {
           }}
         </ProFormDependency>
       </ProForm>
-      <MaskInteractionVerify
-        visible={robotCheckerVisible}
-        onSuccess={async () => {
-          setRobotCheckVisible(false);
-          try {
-            await sendCode();
-            setStep(2);
-          } catch (error) {
-            // 密码错、账号不存在、账号被停用 —— rice 返回的是同一句话,
-            // 区分开就是一个「这个手机号是不是管理员」的探测器
-            toast.show((error as RiceError).message);
-          }
-        }}
-        onMaskClose={() => setRobotCheckVisible(false)}
-      />
     </>
   )
 }
