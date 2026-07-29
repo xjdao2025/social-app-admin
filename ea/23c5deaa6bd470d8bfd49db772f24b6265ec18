@@ -1,0 +1,19 @@
+src/components/login-page/components/LoginForm/index.tsx
+  s_c7c294ddcc30bc::t_377f3174ab08ac 53-55,57-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "ea23c5deaa6bd470d8bfd49db772f24b6265ec18",
+  "prompts": {},
+  "sessions": {
+    "s_c7c294ddcc30bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4902de79-d943-413e-b8b7-c5a851e32947",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
