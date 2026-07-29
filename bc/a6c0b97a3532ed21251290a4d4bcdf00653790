@@ -1,0 +1,22 @@
+src/utils/recipients.test.ts
+  s_c7c294ddcc30bc::t_b9a1826e1407aa 37-42,49,51,55-56,60,64-83
+src/utils/recipients.ts
+  s_c7c294ddcc30bc::t_276d62d14a4ed6 10-15,20-27
+  s_c7c294ddcc30bc::t_2fde3241ea9b1f 38-40,42,44-46,48,54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "bca6c0b97a3532ed21251290a4d4bcdf00653790",
+  "prompts": {},
+  "sessions": {
+    "s_c7c294ddcc30bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4902de79-d943-413e-b8b7-c5a851e32947",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
