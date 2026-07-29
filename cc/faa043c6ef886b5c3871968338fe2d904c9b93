@@ -1,0 +1,25 @@
+src/hooks/useRoster.test.ts
+  s_c7c294ddcc30bc::t_fb2f201347ee40 1-140
+src/pages/place/badge/AddBadgeModal.tsx
+  s_c7c294ddcc30bc::t_68a4aedda26de9 7,17-21,39,42-46,88,92
+src/pages/place/points/_components/PlaceMultiPoints/index.tsx
+  s_c7c294ddcc30bc::t_f822b93c101b0b 10,24-28,46,49-54,84,88
+src/hooks/useRoster.ts
+  s_c7c294ddcc30bc::t_f6d5780889c086 1-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "ccfaa043c6ef886b5c3871968338fe2d904c9b93",
+  "prompts": {},
+  "sessions": {
+    "s_c7c294ddcc30bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4902de79-d943-413e-b8b7-c5a851e32947",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
