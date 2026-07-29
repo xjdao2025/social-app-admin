@@ -5,10 +5,8 @@ import { ProForm, ProFormDependency, ProFormText } from "@ant-design/pro-compone
 import { Button, message } from "antd";
 import GoBack from "@/components/go-back";
 import StyledProFormCaptcha from "@/components/form/ProFormCaptcha";
-import { SMSCodeType } from "@/components/form/ProFormCaptcha/utils";
-import server from "@/server";
+import server, { RiceError } from "@/server/rice";
 import ProFormPassword from "@/components/styled-components/ProFormPassword";
-import { firstCharToLowerCase } from "@/utils/tool";
 
 
 
@@ -37,19 +35,27 @@ export default function ForgetForm(props: ForgetFormProps) {
         form={form}
         onFinish={async (fields) => {
           setLoading(true)
-          const flag = await server.dao("POST /admin/admin-user/reset-password", fields, { silent: true })
-            .catch(e => {
-              const res = e.response.data as API.Response<any>;
-              if (res.errorData?.length) {
-                form.setFields(
-                  res.errorData.map(field => ({ name: firstCharToLowerCase(field.propertyName), errors: [field.errorMessage] }))
-                )
-              }
-              throw e;
-            }).finally(() => setLoading(false));
-          if (flag) {
+          try {
+            await server.passwords.reset({
+              phone: fields.phone,
+              phone_region: '86',
+              code: fields.code,
+              password: fields.newPassword,
+            });
             message.success(t("message.reset-sucess"));
             props.navBack();
+          } catch (error) {
+            // rice 按字段分组返回错误,直接贴回对应的输入框
+            const { fields: fieldErrors, message: text } = error as RiceError;
+            const entries = Object.entries(fieldErrors);
+            if (entries.length) {
+              form.setFields(entries.map(([name, errors]) => ({ name, errors })));
+            } else {
+              message.error(text);
+            }
+            throw error;
+          } finally {
+            setLoading(false);
           }
         }}
       >
@@ -60,8 +66,11 @@ export default function ForgetForm(props: ForgetFormProps) {
         />
         <StyledProFormCaptcha
           name="code"
-          codeType={SMSCodeType.AdminResetPass}
           phoneName="phone"
+          onGetCaptcha={async (phone: string) => {
+            // 手机号不是管理员时服务端也返回 202 —— 不泄露谁是管理员
+            await server.passwords.challenge({ phone, phone_region: '86' });
+          }}
           placeholder={t("placeholder.verify-code")}
           label={t("fields.verify-code")}
           formItemProps={{

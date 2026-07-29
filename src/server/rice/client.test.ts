@@ -95,7 +95,7 @@ describe('错误', () => {
       errors: { phone: ['必须填手机号'], role: ['只能是 admin 或 operator'] },
     })
 
-    const error = await rice.post('/api/admin/admin_users', {}).catch(e => e)
+    const error = (await rice.post('/api/admin/admin_users', {}).catch((e: RiceError) => e)) as RiceError
 
     expect(error).toBeInstanceOf(RiceError)
     expect(error.status).toBe(422)
@@ -109,7 +109,7 @@ describe('错误', () => {
       errors: { detail: '手机号、密码或验证码不正确' },
     })
 
-    const error = await rice.post('/api/admin/session', {}, { anonymous: true }).catch(e => e)
+    const error = (await rice.post('/api/admin/session', {}, { anonymous: true }).catch((e: RiceError) => e)) as RiceError
 
     expect(error.message).toBe('手机号、密码或验证码不正确')
     expect(error.fields).toEqual({})
@@ -118,7 +118,7 @@ describe('错误', () => {
   it('body 没有 errors 时按状态码给一句话,而不是 undefined', async () => {
     mock.onGet('/api/admin/users').reply(403)
 
-    const error = await rice.get('/api/admin/users').catch(e => e)
+    const error = (await rice.get('/api/admin/users').catch((e: RiceError) => e)) as RiceError
 
     expect(error.status).toBe(403)
     expect(error.message).toBe('没有权限')
@@ -128,7 +128,7 @@ describe('错误', () => {
   it('网络层失败给的是连不上,不是某个状态码', async () => {
     mock.onGet('/api/admin/users').networkError()
 
-    const error = await rice.get('/api/admin/users').catch(e => e)
+    const error = (await rice.get('/api/admin/users').catch((e: RiceError) => e)) as RiceError
 
     expect(error.status).toBe(0)
     expect(error.message).toBe('无法连接到服务器')

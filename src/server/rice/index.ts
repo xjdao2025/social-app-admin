@@ -49,7 +49,8 @@ export const session = {
     code: string
   }) => rice.post<AdminSession>('/api/admin/session', params, ANON),
 
-  destroy: () => rice.delete('/api/admin/session'),
+  /** 令牌已经失效时这里会 401 —— 那正是我们想要的结果,别再触发一次登出。 */
+  destroy: () => rice.delete('/api/admin/session', { keepSessionOnUnauthorized: true }),
 }
 
 /** 管理员忘记密码。只走手机号 —— 邮箱没有对应的登录入口。 */
@@ -165,11 +166,19 @@ export const grants = {
     rice.page<Grant>('/api/admin/grain_grants', query),
 
   /**
+   * 发一个验证码到**当前管理员自己的**手机上。
+   *
+   * 发钱要两样都有:令牌可能被人从浏览器里捞走,短信在管理员自己手上。
+   */
+  challenge: () => rice.post<void>('/api/admin/grain_grants/challenge'),
+
+  /**
    * 全有或全无:任何一个收款人解析不出来,整批都不发。
    *
    * `to` 里可以混着写手机号 / 邮箱 / handle / DID / id;空字符串会被丢掉。
+   * 参数不合法时**不消耗验证码** —— 改掉笔误,同一个码接着用。
    */
-  create: (params: { to: string[]; amount: number; memo?: string }) =>
+  create: (params: { to: string[]; amount: number; code: string; memo?: string }) =>
     rice.post<{ granted: number }>('/api/admin/grain_grants', params),
 }
 

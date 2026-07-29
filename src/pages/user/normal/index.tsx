@@ -2,58 +2,64 @@ import Page from "@/components/Page";
 import { ProTable } from "@ant-design/pro-components";
 import { proColumn } from "@/utils/pro-column-builder";
 import ChainHash from "@/components/chain-hash";
-import { Popconfirm, Typography } from "antd";
-import server from "@/server";
-import { useRef, useState } from "react";
+import { message, Popconfirm, Typography } from "antd";
+import server, { RiceError, type AdminUser } from "@/server/rice";
+import { tableRequest } from "@/server/rice/table";
+import { useRef } from "react";
 import { ActionType } from "@ant-design/pro-table/es/typing";
 import dayjs from "dayjs";
 
+/**
+ * 普通用户列表。
+ *
+ * core 有五个列表接口(page / node-user-page / search / search-by-name /
+ * unbound-node-user-search),rice 是一个带过滤的 `GET /api/admin/users`。
+ * 「禁用 / 恢复」原本是两个接口,现在是同一行上的一个布尔位。
+ */
 const UserNormal = () => {
   const actionRef = useRef<ActionType>()
 
-  const reload = () => {
-    actionRef.current?.reload()
-  }
-
-
-  const enableOrDisableUser = async (type: 'enable' | 'disable', id: string) => {
-    switch (type) {
-      case "enable":
-        await server.dao('POST /admin/user-manage/user/enable', { id })
-        break;
-      case "disable":
-        await server.dao('POST /admin/user-manage/user/disable', { id })
-        break;
+  const setDisabled = async (id: string, disabled: boolean) => {
+    try {
+      await server.users.update(id, { disabled })
+      // 禁用会连带撤销该用户的全部令牌 —— core 只改标记,JWT 还能用满 30 天
+      message.success(disabled ? '已禁用' : '已恢复')
+      actionRef.current?.reload()
+    } catch (error) {
+      message.error((error as RiceError).message)
     }
-    reload()
   }
 
   const columns = [
-    proColumn('昵称', 'nickName', { width: 125 })
-      ._enableSearch(),
-    proColumn('DID', 'did', { width: 200 })
+    // core 是五个搜索接口分别按昵称 / DID / 域名 / 手机 / 邮箱找,rice 是一个 q 全找。
+    // 所以搜索区只留一个框 —— 每列一个搜索框会发出五个 rice 不认的参数。
+    proColumn('搜索', 'q', { hideInTable: true })
       ._enableSearch()
-      ._render((_, record) => {
+      ._extend({
+        fieldProps: { placeholder: '昵称 / DID / 域名 / 手机号 / 邮箱' },
+      }),
+    proColumn('昵称', 'nickname', { width: 125 }),
+    proColumn('DID', 'did', { width: 200 })
+      ._render((_, record: AdminUser) => {
         return <ChainHash
           copyable={'tooltip'}
           ellipsis
           hash={record.did}
         />
       }),
-    proColumn('域名', 'domainName', { width: 125 })
-      ._enableSearch(),
-    proColumn('手机号', 'phone', { width: 125 })._enableSearch(),
-    proColumn('邮箱', 'email', { width: 125 })._enableSearch(),
-    proColumn('稻米', 'score', { width: 80 }),
-    proColumn('创建时间', 'createdAt', { width: 180 })
-      ._render((_, record) => dayjs(record.createdAt).format('YYYY-MM-DD HH:mm:ss')),
+    proColumn('域名', 'handle', { width: 125 }),
+    proColumn('手机号', 'phone', { width: 125 }),
+    proColumn('邮箱', 'email', { width: 125 }),
+    proColumn('稻米', 'grain_balance', { width: 80 }),
+    proColumn('创建时间', 'inserted_at', { width: 180 })
+      ._render((_, record: AdminUser) => dayjs(record.inserted_at).format('YYYY-MM-DD HH:mm:ss')),
     proColumn('操作', 'opt', { width: 100 })
       ._option()
-      ._render((_, record) => {
-        if (record.disable) {
+      ._render((_, record: AdminUser) => {
+        if (record.disabled) {
           return <Popconfirm
             title={'确定恢复该普通用户吗？'}
-            onConfirm={() => enableOrDisableUser('enable', record.id)}
+            onConfirm={() => setDisabled(record.id, false)}
           >
             <Typography.Link>
               恢复
@@ -61,8 +67,8 @@ const UserNormal = () => {
           </Popconfirm>
         }
         return <Popconfirm
-          title={'确定禁用该普通用户吗？'}
-          onConfirm={() => enableOrDisableUser('disable', record.id)}
+          title={'确定禁用该普通用户吗？该用户当前的登录会立刻失效。'}
+          onConfirm={() => setDisabled(record.id, true)}
         >
           <Typography.Link
             type={'danger'}
@@ -76,6 +82,7 @@ const UserNormal = () => {
   return <Page title={'普通用户'}>
     <ProTable
       actionRef={actionRef}
+      rowKey="id"
       headerTitle={'列表'}
       search={{
         collapsed: false,
@@ -84,18 +91,8 @@ const UserNormal = () => {
       }}
       options={false}
       columns={columns}
-      request={async (params) => {
-        const obj = {
-          ...params,
-          pageNum: params.current,
-        }
-        const result = await server.dao('POST /admin/user-manage/user/page', obj)
-        return {
-          data: result?.items,
-          total: result?.total,
-          success: true,
-        }
-      }}
+      // core 的五个搜索接口在 rice 这里是同一个 q:昵称 / handle / DID / 邮箱 / 手机号
+      request={tableRequest(query => server.users.list({ ...query, node_member: false }))}
       pagination={{
         showTotal: false,
         hideOnSinglePage: true,

@@ -4,12 +4,19 @@ import { proColumn } from "@/utils/pro-column-builder";
 import ChainHash from "@/components/chain-hash";
 import { Flex, message, Popconfirm, Typography } from "antd";
 import AddNodeUser from "./AddNodeUser.tsx";
-import server from "@/server";
-import { useRef, useState } from "react";
+import server, { RiceError, type AdminUser } from "@/server/rice";
+import { tableRequest } from "@/server/rice/table";
+import { useRef } from "react";
 import { ActionType } from "@ant-design/pro-table/es/typing";
 import dayjs from "dayjs";
 import CreditsDetail from './CreditsDetail'
 
+/**
+ * 节点用户列表 = `GET /api/admin/users?node_member=true`。
+ *
+ * core 有四个动词接口(enable / disable / set-node-user / cancel-node-user),
+ * 在 rice 那里是同一行上的两个布尔位,一个 PATCH 就够。
+ */
 const NodeUser = () => {
   const actionRef = useRef<ActionType>()
 
@@ -17,69 +24,68 @@ const NodeUser = () => {
     actionRef.current?.reload()
   }
 
-
-  const enableOrDisableUser = async (type: 'enable' | 'disable', id: string) => {
-    switch (type) {
-      case "enable":
-        await server.dao('POST /admin/user-manage/user/enable', { id })
-        break;
-      case "disable":
-        await server.dao('POST /admin/user-manage/user/disable', { id })
-        break;
+  const patch = async (id: string, changes: { disabled?: boolean; node_member?: boolean }, ok: string) => {
+    try {
+      await server.users.update(id, changes)
+      message.success(ok)
+      reload()
+    } catch (error) {
+      message.error((error as RiceError).message)
     }
-    reload()
-  }
-
-  const cancelNodeUser = async (id: string) => {
-    await server.dao('POST /admin/user-manage/user/cancel-node-user', { id })
-    message.success('取消成功');
-    reload()
   }
 
   const columns = [
-    proColumn('昵称', 'nickName')
-      ._enableSearch(),
-    proColumn('DID', 'did')
+    proColumn('搜索', 'q', { hideInTable: true })
       ._enableSearch()
-      ._render((_, record) => {
+      ._extend({
+        fieldProps: { placeholder: '昵称 / DID / 域名 / 手机号 / 邮箱' },
+      }),
+    proColumn('昵称', 'nickname'),
+    proColumn('DID', 'did')
+      ._render((_, record: AdminUser) => {
         return <ChainHash
           copyable={'tooltip'}
           ellipsis
           hash={record.did}
         />
       }),
-    proColumn('域名', 'domainName')._enableSearch(),
-    proColumn('手机号', 'phone')._enableSearch(),
-    proColumn('邮箱', 'email')._enableSearch(),
-    proColumn('稻米', 'score')
-      ._render((_, record) => {
+    proColumn('域名', 'handle'),
+    proColumn('手机号', 'phone'),
+    proColumn('邮箱', 'email'),
+    proColumn('稻米', 'grain_balance')
+      ._render((_, record: AdminUser) => {
         return (
           <CreditsDetail
-            credits={record.score}
+            credits={record.grain_balance}
             userId={record.id}
           />
         )
       }),
-    proColumn('创建时间', 'createdAt', { width: 180 })
-      ._render((_, record) => dayjs(record.createdAt).format('YYYY-MM-DD HH:mm:ss')),
+    proColumn('创建时间', 'inserted_at', { width: 180 })
+      ._render((_, record: AdminUser) => dayjs(record.inserted_at).format('YYYY-MM-DD HH:mm:ss')),
     proColumn('操作', 'opt', { width: 150 })
       ._option()
-      ._render((_, record) => {
+      ._render((_, record: AdminUser) => {
         return <Flex gap={'middle'}>
-          <Typography.Link onClick={() => cancelNodeUser(record.id)}>
-            取消节点用户
-          </Typography.Link>
-          {record.disable ?
+          <Popconfirm
+            title={'确定取消该用户的节点用户身份吗？'}
+            onConfirm={() => patch(record.id, { node_member: false }, '取消成功')}
+          >
+            <Typography.Link>
+              取消节点用户
+            </Typography.Link>
+          </Popconfirm>
+          {record.disabled ?
             <Popconfirm
               title={'确定恢复该节点用户'}
-              onConfirm={() => enableOrDisableUser('enable', record.id)}
+              onConfirm={() => patch(record.id, { disabled: false }, '已恢复')}
             >
               <Typography.Link>
                 恢复
               </Typography.Link>
             </Popconfirm> : <Popconfirm
-              title={'确定禁用该节点用户'}
-              onConfirm={() => enableOrDisableUser('disable', record.id)}
+              title={'确定禁用该节点用户？该用户当前的登录会立刻失效。'}
+              onConfirm={() => patch(record.id, { disabled: true }, '已禁用')}
             >
               <Typography.Link
                 type={'danger'}
@@ -94,6 +100,7 @@ const NodeUser = () => {
   return <Page title={'节点用户'}>
     <ProTable
       actionRef={actionRef}
+      rowKey="id"
       headerTitle={'列表'}
       search={{
         collapsed: false,
@@ -105,18 +112,7 @@ const NodeUser = () => {
         <AddNodeUser reload={reload} />
       ]}
       columns={columns}
-      request={async (params) => {
-        const obj = {
-          ...params,
-          pageNum: params.current,
-        }
-        const result = await server.dao('POST /admin/user-manage/node-user/page', obj)
-        return {
-          data: result?.items,
-          total: result?.total,
-          success: true,
-        }
-      }}
+      request={tableRequest(query => server.users.list({ ...query, node_member: true }))}
       pagination={{
         showTotal: false,
         pageSize: 15,

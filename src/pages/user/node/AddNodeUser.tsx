@@ -1,27 +1,37 @@
 import { Button, Flex, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { ModalForm, ProFormSelect } from "@ant-design/pro-components";
-import server from "@/server";
+import server, { RiceError } from "@/server/rice";
 import { debounce } from "lodash";
 import { useState } from "react";
 
+/**
+ * 把一个普通用户设成节点用户。
+ *
+ * core 是 `user/search`(按手机或邮箱)+ `set-node-user` 两个接口;
+ * rice 是同一个用户列表加过滤,再 PATCH 一个布尔位。
+ */
 const AddNodeUserModal = (props: { reload: () => void }) => {
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState<{ label: string; value: string }[]>([]);
 
   const searchUser = async (keyWords: string) => {
     if (!keyWords) {
       setOptions([]);
       return
     }
-    const result = await server.dao('POST /admin/user-manage/user/search', {
-      phoneOrEmail: keyWords
-    })
 
-    const options = result?.map((res) => ({
-      label: res.phone && res.email ? `${res.phone}/${res.email}` : (res.phone || res.email), value: res.userId
-    }))
+    try {
+      // 只找还不是节点用户的 —— 已经是的没必要再设一遍
+      const { data } = await server.users.list({ q: keyWords, node_member: false, per_page: 20 })
 
-    setOptions(options)
+      setOptions(data.map(user => ({
+        label: [user.nickname, user.phone, user.email].filter(Boolean).join(' / ') || user.handle,
+        value: user.id,
+      })))
+    } catch (error) {
+      message.error((error as RiceError).message)
+      setOptions([])
+    }
   }
 
   return <>
@@ -38,30 +48,35 @@ const AddNodeUserModal = (props: { reload: () => void }) => {
         destroyOnClose: true,
       }}
       submitter={{
-        render: (props, dom) => {
+        render: (submitterProps) => {
           return <Flex
             className={'w-full mt-[20px]'}
             justify="center"
           >
             <Button
               type="primary"
-              onClick={props.submit}
+              onClick={submitterProps.submit}
             >设为节点用户</Button>
           </Flex>
         }
       }}
-      onFinish={async (values) => {
-        await server.dao('POST /admin/user-manage/user/set-node-user', values)
-        message.success('新增成功')
-        props.reload();
-        return true
+      onFinish={async (values: { id: string }) => {
+        try {
+          await server.users.update(values.id, { node_member: true })
+          message.success('新增成功')
+          props.reload();
+          return true
+        } catch (error) {
+          message.error((error as RiceError).message)
+          return false
+        }
       }}
     >
       <div className={'mt-[30px]'} />
       <ProFormSelect
         label={'账号'}
         name={'id'}
-        placeholder={'请输入手机号或邮箱'}
+        placeholder={'请输入昵称、手机号或邮箱'}
         fieldProps={{
           showSearch: true,
           filterOption: false,

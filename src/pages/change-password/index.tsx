@@ -8,11 +8,9 @@ import GoBack from '@/components/go-back';
 import LanPicker from '@/components/lan-picker';
 import { useTranslation } from 'react-i18next';
 import StyledProFormCaptcha from '@/components/form/ProFormCaptcha';
-import { SMSCodeType } from '@/components/form/ProFormCaptcha/utils';
 import useCurrentUserInfo from '@/hooks/useCurrentUserInfo';
 import { Button, ConfigProvider, message } from 'antd';
-import { encryptEmail, firstCharToLowerCase } from '@/utils/tool';
-import server from '@/server';
+import server, { RiceError } from '@/server/rice';
 import { useNavigate } from '@/router';
 import ProFormPassword from "@/components/styled-components/ProFormPassword";
 import { useEffect, useState } from 'react';
@@ -72,20 +70,27 @@ export default function ChangePassword() {
                 form={form}
                 onFinish={async (fields) => {
                   setLoading(true)
-                  const flag = await server.dao("POST /admin/admin-user/reset-password", fields, { silent: true })
-                    .catch(e => {
-                      const res = e.response.data as API.Response<any>;
-                      if (res.errorData?.length) {
-                        form.setFields(
-                          res.errorData.map(field => ({ name: firstCharToLowerCase(field.propertyName), errors: [field.errorMessage] }))
-                        )
-                      }
-                      throw e;
-                    }).finally(() => setLoading(false));
-                  if (flag) {
+                  try {
+                    await server.passwords.reset({
+                      phone: fields.phone,
+                      phone_region: '86',
+                      code: fields.code,
+                      password: fields.newPassword,
+                    });
+                    // rice 改完密码会撤销该管理员的全部会话,本地也得跟着清
                     message.success(t("success"));
                     logout();
                     navigate("/")
+                  } catch (error) {
+                    const { fields: fieldErrors, message: text } = error as RiceError;
+                    const entries = Object.entries(fieldErrors);
+                    if (entries.length) {
+                      form.setFields(entries.map(([name, errors]) => ({ name, errors })));
+                    } else {
+                      message.error(text);
+                    }
+                  } finally {
+                    setLoading(false);
                   }
                 }}
               >
@@ -129,8 +134,10 @@ export default function ChangePassword() {
 
                 <StyledProFormCaptcha
                   name="code"
-                  codeType={SMSCodeType.AdminResetPass}
                   phoneName="phone"
+                  onGetCaptcha={async (phone: string) => {
+                    await server.passwords.challenge({ phone, phone_region: '86' });
+                  }}
                   label={t("fields.verify-code")}
                 />
                 <ProFormDependency name={['newPassword', 'confirmNewPassword', 'code']}>
