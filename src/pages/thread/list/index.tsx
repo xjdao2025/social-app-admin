@@ -4,7 +4,7 @@ import { proColumn } from "@/utils/pro-column-builder";
 import { Badge, Flex, message, Popconfirm, Typography } from 'antd'
 import PostDetailDrawer from "./PostDetailDrawer.tsx";
 import server, { RiceError } from "@/server/rice";
-import { listPosts, type Post } from "@/server/post";
+import { listPosts, PostServiceError, type Post } from "@/server/post";
 import InitiatorAvatar from "@/pages/thread/proposal/InitiatorAvatar.tsx";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
@@ -158,17 +158,25 @@ const PostList = () => {
       rowKey="uri"
       request={async (params) => {
         const { current, pageSize, ...rest } = params
-        const result = await listPosts({
-          ...rest,
-          per_page: pageSize ?? 10,
-          page: current ?? 1,
-          // 已下架的不在这个列表里 —— 下架就是打上 blacklist 标签
-          ban_labels: ['blacklist']
-        })
-        return {
-          data: result.posts,
-          total: result.total,
-          success: true
+
+        try {
+          const result = await listPosts({
+            ...rest,
+            per_page: pageSize ?? 10,
+            page: current ?? 1,
+            // 已下架的不在这个列表里 —— 下架就是打上 blacklist 标签
+            ban_labels: ['blacklist']
+          })
+          return {
+            data: result.posts,
+            total: result.total,
+            success: true
+          }
+        } catch (error) {
+          // 不接住的话,这个 Promise 会以 "Uncaught (in promise)" 落到控制台,
+          // 而界面上只是一直空着 —— 运营看不出是没数据还是没连上。
+          message.error((error as PostServiceError).message)
+          return { data: [], total: 0, success: false }
         }
       }}
       pagination={{
