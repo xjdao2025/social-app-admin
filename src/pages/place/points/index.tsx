@@ -3,8 +3,9 @@ import { ProTable } from "@ant-design/pro-components";
 import { proColumn } from "@/utils/pro-column-builder";
 import PlaceSinglePoints from "./_components/PlaceSinglePoints";
 import PlaceMultiPoints from "./_components/PlaceMultiPoints";
-import { useRef, useState } from "react";
-import server from "@/server";
+import { useRef } from "react";
+import server, { type Grant } from "@/server/rice";
+import { tableRequest } from "@/server/rice/table";
 import dayjs from "dayjs";
 import { ActionType } from "@ant-design/pro-table/es/typing";
 
@@ -16,18 +17,22 @@ const PlacePoints = () => {
   }
 
   const columns = [
-    proColumn('接收者', 'nickName')
-      ._enableSearch(),
-    proColumn('手机号', 'phone'),
-    proColumn('邮箱', 'email'),
-    proColumn('发放者账号', 'createdBy'),
-    proColumn('手机号或邮箱', 'phoneOrEmail', { hideInTable: true })
-      ._enableSearch(),
-    proColumn('发放时间', 'time')
-      ._dateRange('startTime', 'endTime', 'YYYY-MM-DD')
+    // core 有「接收者」和「手机号或邮箱」两个搜索框,rice 是一个 q 全找
+    proColumn('接收者', 'q', { hideInTable: true })
       ._enableSearch()
-      ._render((_, record) => dayjs(record.getTime).format('YYYY/MM/DD HH:mm:ss')),
-    proColumn('发放稻米', 'score')
+      ._extend({ fieldProps: { placeholder: '昵称 / 域名 / 手机号 / 邮箱' } }),
+    proColumn('接收者', 'to')
+      ._render((_, record: Grant) => record.to?.nickname || record.to?.handle || '—'),
+    proColumn('手机号', 'phone')
+      ._render((_, record: Grant) => record.to?.phone || '—'),
+    proColumn('邮箱', 'email')
+      ._render((_, record: Grant) => record.to?.email || '—'),
+    proColumn('发放时间', 'time')
+      ._dateRange('since', 'until', 'YYYY-MM-DDTHH:mm:ss[Z]')
+      ._enableSearch()
+      ._render((_, record: Grant) => dayjs(record.inserted_at).format('YYYY/MM/DD HH:mm:ss')),
+    proColumn('发放稻米', 'amount'),
+    proColumn('附言', 'memo'),
   ]
 
   return <Page title="发放稻米">
@@ -40,18 +45,8 @@ const PlacePoints = () => {
         <PlaceSinglePoints reload={reload} />,
         <PlaceMultiPoints reload={reload} />
       ]}
-      request={async (params) => {
-        const obj = {
-          ...params,
-          pageNum: params.current,
-        }
-        const result = await server.dao('POST /admin/score-distribute-record/page', obj)
-        return {
-          data: result?.items,
-          total: result?.total,
-          success: true,
-        }
-      }}
+      rowKey="id"
+      request={tableRequest(query => server.grants.list(query))}
       search={{
         labelWidth: 'auto',
         collapsed: false,

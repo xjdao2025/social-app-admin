@@ -61,7 +61,7 @@ const AddBadgeModal = (props: { reload: () => void }) => {
     >
       <div className={'flex items-center ml-[6px] gap-[4px] text-[12px]'}>
         <span className={'text-[#6F869F]'}>仅支持excel格式</span>
-        <DownloadTemplate temName={'medalDistributionTemplateId'} />
+        <DownloadTemplate temName={'badge_distribution'} />
       </div>
     </ProFormUploadFile>
 
