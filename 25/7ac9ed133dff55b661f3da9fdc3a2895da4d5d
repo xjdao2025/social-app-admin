@@ -1,0 +1,21 @@
+src/server/rice/errors.ts
+  s_c7c294ddcc30bc::t_fba4c404f522c7 33-40,49-50
+src/server/rice/client.test.ts
+  s_c7c294ddcc30bc::t_fba4c404f522c7 127-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "257ac9ed133dff55b661f3da9fdc3a2895da4d5d",
+  "prompts": {},
+  "sessions": {
+    "s_c7c294ddcc30bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4902de79-d943-413e-b8b7-c5a851e32947",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
