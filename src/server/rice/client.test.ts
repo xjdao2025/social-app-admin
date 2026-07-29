@@ -124,6 +124,29 @@ describe('错误', () => {
     expect(error.message).toBe('没有权限')
   })
 
+  // 服务端知道原因时会写在 body 里,那句必须盖过兜底文案 ——
+  // 兜底只说状态码的意思,不猜原因,猜错了会把人指向完全无关的方向
+  it('body 里的原因盖过兜底文案', async () => {
+    mock.onPost('/api/admin/post_takedowns').reply(503, {
+      errors: { detail: '贴文服务未配置' },
+    })
+
+    const error = (await rice
+      .post('/api/admin/post_takedowns', {})
+      .catch((e: RiceError) => e)) as RiceError
+
+    expect(error.message).toBe('贴文服务未配置')
+  })
+
+  // Phoenix 有未执行的迁移时会直接抛一个 HTML 错误页,没有 errors 可读
+  it('没有 body 的 503 不乱猜原因', async () => {
+    mock.onGet('/api/admin/me').reply(503, '<html>PendingMigrationError</html>')
+
+    const error = (await rice.get('/api/admin/me').catch((e: RiceError) => e)) as RiceError
+
+    expect(error.message).toBe('服务暂时不可用')
+  })
+
   // 连不上和「服务端返回了错误」是两回事,提示语不该一样
   it('网络层失败给的是连不上,不是某个状态码', async () => {
     mock.onGet('/api/admin/users').networkError()
