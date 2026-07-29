@@ -7,8 +7,7 @@ import useCurrentUserInfo from "@/hooks/useCurrentUserInfo.ts";
 import { encryptPhone } from "@/utils/tool.ts";
 import server, { RiceError } from "@/server/rice";
 import DownloadTemplate from "@/components/download-template";
-import { parseRecipients } from "@/utils/recipients";
-import { useState } from "react";
+import { useRoster } from "@/hooks/useRoster";
 
 /**
  * 批量发放。
@@ -22,23 +21,11 @@ import { useState } from "react";
  */
 const PlaceMultiPointsModal = (props: { reload: () => void }) => {
   const { userInfo } = useCurrentUserInfo()
-  const [recipients, setRecipients] = useState<string[]>([])
-  const [fileName, setFileName] = useState('')
-
-  const handleFile = async (file: File) => {
-    try {
-      const list = await parseRecipients(file)
-      if (!list.length) {
-        message.error('名单里没有读到收款人，请检查第一列')
-        return
-      }
-      setRecipients(list)
-      setFileName(file.name)
-      message.success(`已读取 ${list.length} 个收款人`)
-    } catch {
-      message.error('名单解析失败，请确认是 Excel 文件')
-    }
-  }
+  const { recipients, fileName, parsing, select, reset } = useRoster({
+    empty: '名单里没有读到收款人，请检查第一列',
+    failed: '名单解析失败，请确认是 Excel 文件',
+    ok: n => `已读取 ${n} 个收款人`,
+  })
 
   return <ModalForm
     trigger={<Button type={'primary'} icon={<PlusOutlined />}>批量发放</Button>}
@@ -56,12 +43,15 @@ const PlaceMultiPointsModal = (props: { reload: () => void }) => {
     modalProps={{
       centered: true,
       destroyOnClose: true,
-      afterClose: () => {
-        setRecipients([])
-        setFileName('')
-      },
+      afterClose: reset,
     }}
     onFinish={async (values: { amount: number; code: string }) => {
+      // 解析还没完就点了确认 —— 这时名单是空的,不能拿上一份顶上
+      if (parsing) {
+        message.error('名单还在解析，请稍候')
+        return false
+      }
+
       if (!recipients.length) {
         message.error('请先导入名单')
         return false
@@ -91,11 +81,11 @@ const PlaceMultiPointsModal = (props: { reload: () => void }) => {
           showUploadList={false}
           // 名单不上传,只在本地解析
           beforeUpload={file => {
-            handleFile(file)
+            select(file)
             return Upload.LIST_IGNORE
           }}
         >
-          <Button icon={<UploadOutlined />}>导入名单</Button>
+          <Button icon={<UploadOutlined />} loading={parsing}>导入名单</Button>
         </Upload>
         <div className={'flex items-center ml-[6px] gap-[4px] text-[12px]'}>
           <span className={'text-[#6F869F]'}>仅支持excel格式</span>

@@ -4,8 +4,7 @@ import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import ProFormUpload from "@/components/styled-components/ProFormUpload";
 import server, { RiceError } from "@/server/rice";
 import DownloadTemplate from "@/components/download-template";
-import { parseRecipients } from "@/utils/recipients";
-import { useState } from "react";
+import { useRoster } from "@/hooks/useRoster";
 
 /**
  * 新建勋章。
@@ -15,23 +14,11 @@ import { useState } from "react";
  * 勋章也不建。名单在浏览器里解析,文件不上传。
  */
 const AddBadgeModal = (props: { reload: () => void }) => {
-  const [recipients, setRecipients] = useState<string[]>([])
-  const [fileName, setFileName] = useState('')
-
-  const handleFile = async (file: File) => {
-    try {
-      const list = await parseRecipients(file)
-      if (!list.length) {
-        message.error('名单里没有读到用户，请检查第一列')
-        return
-      }
-      setRecipients(list)
-      setFileName(file.name)
-      message.success(`已读取 ${list.length} 个用户`)
-    } catch {
-      message.error('名单解析失败，请确认是 Excel 文件')
-    }
-  }
+  const { recipients, fileName, parsing, select, reset } = useRoster({
+    empty: '名单里没有读到用户，请检查第一列',
+    failed: '名单解析失败，请确认是 Excel 文件',
+    ok: n => `已读取 ${n} 个用户`,
+  })
 
   return <ModalForm
     width={450}
@@ -49,12 +36,14 @@ const AddBadgeModal = (props: { reload: () => void }) => {
     modalProps={{
       centered: true,
       destroyOnClose: true,
-      afterClose: () => {
-        setRecipients([])
-        setFileName('')
-      },
+      afterClose: reset,
     }}
     onFinish={async (values: { name: string; image_id?: string }) => {
+      if (parsing) {
+        message.error('名单还在解析，请稍候')
+        return false
+      }
+
       if (!recipients.length) {
         message.error('请先导入名单')
         return false
@@ -96,11 +85,11 @@ const AddBadgeModal = (props: { reload: () => void }) => {
           showUploadList={false}
           // 名单不上传,只在本地解析
           beforeUpload={file => {
-            handleFile(file)
+            select(file)
             return Upload.LIST_IGNORE
           }}
         >
-          <Button icon={<UploadOutlined />}>导入名单</Button>
+          <Button icon={<UploadOutlined />} loading={parsing}>导入名单</Button>
         </Upload>
         <div className={'flex items-center ml-[6px] gap-[4px] text-[12px]'}>
           <span className={'text-[#6F869F]'}>仅支持excel格式</span>
