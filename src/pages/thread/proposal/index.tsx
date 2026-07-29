@@ -3,7 +3,8 @@ import { ProTable } from "@ant-design/pro-components";
 import { proColumn } from "@/utils/pro-column-builder";
 import { Badge, Flex, message, Popconfirm, Typography } from 'antd'
 import PostDetailDrawer from "./PostDetailDrawer.tsx";
-import server from "@/server";
+import server, { RiceError, type Proposal } from "@/server/rice";
+import { tableRequest } from "@/server/rice/table";
 import { useRef, useState } from "react";
 import { ActionType } from "@ant-design/pro-table/es/typing";
 import dayjs from "dayjs";
@@ -11,16 +12,17 @@ import InitiatorAvatar from "./InitiatorAvatar.tsx";
 
 const { Link } = Typography;
 
+/** rice 的状态是字符串,不是 core 的 1/2/3。 */
 export const ProposalStatus = {
-  1: {
+  open: {
     text: '进行中',
     status: 'Processing',
   },
-  2: {
+  passed: {
     text: '已通过',
     status: 'Success',
   },
-  3: {
+  rejected: {
     text: '未通过',
     status: 'Error',
   },
@@ -35,53 +37,56 @@ const PostList = () => {
     actionRef.current?.reload()
   }
 
-  const takeDown = async (id: string) => {
-    await server.dao('POST /admin/proposal/take-off', {
-      proposalId: id,
-    })
-    message.success('下架成功')
-    reload()
+  /** 下架 / 恢复。core 的 take-off 只能单向下架,没有恢复的入口。 */
+  const setListed = async (id: string, listed: boolean) => {
+    try {
+      await server.proposals.setListed(id, listed)
+      message.success(listed ? '恢复成功' : '下架成功')
+      reload()
+    } catch (error) {
+      message.error((error as RiceError).message)
+    }
   }
 
   const columns = [
-    proColumn('名称', 'name', { width: 300 })
-      ._enableSearch(),
-    proColumn('发布方（节点）', 'initiatorName', { width: 200 })
+    proColumn('名称', 'q', { hideInTable: true })
       ._enableSearch()
-      ._render((_, record) => {
-        if (!record.initiatorName || !record.initiatorAvatar) return '-'
-        return <InitiatorAvatar avatar={record?.initiatorAvatar} name={record.initiatorName} />
+      ._extend({ fieldProps: { placeholder: '按标题搜索' } }),
+    proColumn('名称', 'title', { width: 300 }),
+    proColumn('发布方（节点）', 'author', { width: 200 })
+      ._render((_, record: Proposal) => {
+        if (!record.author) return '-'
+        return <InitiatorAvatar
+          avatar={record.author.avatar?.url}
+          name={record.author.nickname || record.author.handle}
+        />
       }),
     proColumn('状态', 'status', { width: 125 })
       ._enableSearch()
-      ._valueEnum(ProposalStatus)
-      ._extend({
-        search: {
-          transform: (value) => {
-            return {
-              status: Number(value),
-            }
-          }
-        }
+      ._valueEnum(ProposalStatus),
+    proColumn('上下架', 'listed', { width: 100 })
+      ._render((_, record: Proposal) => {
+        return record.listed ? <Badge status="success" text="已上架" /> : <Badge status="error" text="已下架" />
       }),
-    proColumn('上下架', 'onShelf', { width: 100 })
-      ._render((_, record) => {
-        return record.onShelf ? <Badge status="success" text="已上架" /> : <Badge status="error" text="已下架" />
-      }),
-    proColumn('发布时间', 'createdAt',{ width: 125 })
-      ._dateRange('startTime', 'endTime', 'YYYY-MM-DD')
+    proColumn('发布时间', 'inserted_at',{ width: 125 })
+      ._dateRange('since', 'until', 'YYYY-MM-DD')
       ._enableSearch()
-      ._render((_, record) => dayjs(record.createdAt).format(timeFormat)),
-    proColumn('截止时间', 'endAt',{ width: 125 })
-      ._render((_, record) => dayjs(record.endAt).format(timeFormat)), ,
-    proColumn('操作', '', { width: 100 })
+      ._render((_, record: Proposal) => dayjs(record.inserted_at).format(timeFormat)),
+    proColumn('截止时间', 'closes_at',{ width: 125 })
+      ._render((_, record: Proposal) => dayjs(record.closes_at).format(timeFormat)),
+    proColumn('操作', '', { width: 140 })
       ._option()
-      ._render((_, record) => {
+      ._render((_, record: Proposal) => {
         return <Flex gap={10}>
-          <PostDetailDrawer proposalId={record.id} takeDown={() => takeDown(record.id)} />
-          {record.onShelf && <Popconfirm title={'确定下架该提案吗？'} onConfirm={() => takeDown(record.id)}>
-            <Link>下架</Link>
-          </Popconfirm>}
+          <PostDetailDrawer proposalId={record.id} takeDown={() => setListed(record.id, false)} />
+          {record.listed
+            ? <Popconfirm title={'确定下架该提案吗？'} onConfirm={() => setListed(record.id, false)}>
+                <Link>下架</Link>
+              </Popconfirm>
+            // core 下架之后就找不回来了 —— 后台列表和 C 端用的是同一个「只看上架」的查询
+            : <Popconfirm title={'确定恢复该提案吗？'} onConfirm={() => setListed(record.id, true)}>
+                <Link>恢复</Link>
+              </Popconfirm>}
         </Flex>
       })
   ]
@@ -97,18 +102,8 @@ const PostList = () => {
         collapseRender: false,
         labelWidth: 'auto'
       }}
-      request={async (params) => {
-        const obj = {
-          ...params,
-          pageNum: params.current,
-        }
-        const result = await server.dao('POST /admin/proposal/page', obj)
-        return {
-          data: result?.items,
-          total: result?.total,
-          success: true,
-        }
-      }}
+      rowKey="id"
+      request={tableRequest(query => server.proposals.list(query))}
       pagination={{
         showTotal: false,
         hideOnSinglePage: true,

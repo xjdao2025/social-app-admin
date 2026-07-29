@@ -3,8 +3,9 @@ import { ProTable } from "@ant-design/pro-components";
 import { proColumn } from "@/utils/pro-column-builder";
 import AddBadgeModal from "./AddBadgeModal.tsx";
 import UserBadgeDetail from "@/pages/place/badge/UserBadgeDetail.tsx";
-import server from "@/server";
-import { useRef, useState } from "react";
+import server, { type Badge } from "@/server/rice";
+import { tableRequest } from "@/server/rice/table";
+import { useRef } from "react";
 import OssImage from "@/components/oss-image";
 import { ActionType } from "@ant-design/pro-table/es/typing";
 
@@ -16,13 +17,13 @@ const BadgePlace = () => {
   }
 
   const columns = [
-    proColumn('徽章','attachId', { width: 120})
-      ._render((_, record) => {
-        return <OssImage className={'w-[64px] h-[64px]'} attachId={record.attachId} />
+    proColumn('徽章','image', { width: 120})
+      ._render((_, record: Badge) => {
+        return <OssImage className={'w-[64px] h-[64px]'} attachId={record.image?.id} />
       }),
     proColumn('徽章名称','name'),
-    proColumn('获得用户','quantity')
-      ._render((_, record) => {
+    proColumn('获得用户','holder_count')
+      ._render((_, record: Badge) => {
         return <UserBadgeDetail record={record} />
       }),
   ]
@@ -37,18 +38,8 @@ const BadgePlace = () => {
       toolBarRender={() => {
         return [<AddBadgeModal reload={reload} />]
       }}
-      request={async (params) => {
-
-        const result = await server.dao('POST /admin/medal/page', {
-          pageNum: params.current!,
-          pageSize: params.pageSize!
-        })
-        return {
-          data: result?.items,
-          total: result?.total,
-          success: true
-        }
-      }}
+      rowKey="id"
+      request={tableRequest(query => server.badges.list(query))}
       pagination={{
         showTotal: false,
         hideOnSinglePage: true

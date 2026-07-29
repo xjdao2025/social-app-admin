@@ -57,6 +57,12 @@ export default defineConfig({
         target: process.env.VITE_RICE_ORIGIN || 'http://127.0.0.1:4000',
         changeOrigin: true,
       },
+      // 贴文列表是直连 post 服务的,不经过 rice —— core 时代也是如此。
+      // 下架走 rice 代理(那需要管理凭据),读列表不需要。
+      '/post': {
+        target: process.env.VITE_POST_ORIGIN || 'https://xiangjiandao.rivtower.cc',
+        changeOrigin: true,
+      },
     }
   }
   // server: {

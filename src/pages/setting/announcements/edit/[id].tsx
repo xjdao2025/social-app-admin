@@ -1,6 +1,6 @@
 import Page from "@/components/Page";
 import { Link, useNavigate, useParams } from "@/router";
-import server from "@/server";
+import server, { RiceError } from "@/server/rice";
 import { useBoolean, useRequest } from "ahooks";
 import { Breadcrumb, Button, Flex, message } from "antd";
 import { type FC, useRef } from 'react'
@@ -17,12 +17,18 @@ const EditAnnouncement: FC = () => {
 
 
   useRequest(
-    async () => server.dao("POST /admin/information/detail", { informationId: id }),
+    async () => server.announcements.get(id),
     {
       ready: Boolean(id),
-      onSuccess: response => {
-        editorRef.current?.setData(response!.name, response!.attachId)
-      }
+      onSuccess: announcement => {
+        // 正文在附件里,响应带的是完整 url
+        if (announcement.attachment) {
+          editorRef.current?.setData(announcement.title, announcement.attachment.url)
+        } else {
+          editorRef.current?.setData(announcement.title, '')
+        }
+      },
+      onError: error => message.error((error as RiceError).message),
     }
   )
 
@@ -39,15 +45,11 @@ const EditAnnouncement: FC = () => {
 
     try {
       setLoading.setTrue()
-      await server.dao(
-        "POST /admin/information/modify",
-        {
-          informationId: id,
-          ...(await editor.getData())
-        }
-      )
+      await server.announcements.update(id, await editor.getData())
       message.success("发布成功")
       navigate(-1)
+    } catch (error) {
+      message.error((error as RiceError).message)
     } finally {
       setLoading.setFalse()
     }

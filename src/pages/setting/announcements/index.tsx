@@ -1,6 +1,6 @@
 import Page from "@/components/Page";
 import { Link as RouteLink } from '@/router.ts'
-import server from "@/server";
+import server, { RiceError, type Announcement } from "@/server/rice";
 import { proColumn } from "@/utils/pro-column-builder";
 import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
 import { DragSortTable, ProColumns } from "@ant-design/pro-components";
@@ -18,28 +18,29 @@ const Announcements: FC = () => {
     loading: anncListLoading,
     refresh: refreshAnncList,
     mutate: updateAnncList
-  } = useRequest(async () => server.dao("POST /admin/information/list"))
+  } = useRequest(async () => server.announcements.list())
 
   const {
     run: delAnnc
   } = useRequest(
-    async (informationId: string) => server.dao("POST /admin/information/delete", { informationId }),
+    async (id: string) => server.announcements.remove(id),
     {
       manual: true,
+      onError: error => message.error((error as RiceError).message),
       onFinally: refreshAnncList
     }
   )
 
-  const columns: ProColumns<APIDao.WebEndpointsAdminInformationAdminInformationListVo>[] = [
-    proColumn('排序', 'no', { width: 120 }),
-    proColumn('标题', 'name', { width: 340 }),
-    proColumn('发布时间', 'createAt', { ellipsis: true, width: 340 })
-      ._render((_, rencord) => {
-        return dayjs(rencord.createAt).format('YYYY-MM-DD HH:mm:ss')
+  const columns: ProColumns<Announcement>[] = [
+    proColumn('排序', 'position', { width: 120 }),
+    proColumn('标题', 'title', { width: 340 }),
+    proColumn('发布时间', 'inserted_at', { ellipsis: true, width: 340 })
+      ._render((_, record: Announcement) => {
+        return dayjs(record.inserted_at).format('YYYY-MM-DD HH:mm:ss')
       }),
     proColumn('操作', '', { width: 300 })
       ._option()
-      ._render((_, record) => {
+      ._render((_, record: Announcement) => {
         return (
           <Space size={ 'middle' }>
             <RouteLink to="/setting/announcements/edit/:id" params={ { id: record.id } }>编辑</RouteLink>
@@ -53,19 +54,21 @@ const Announcements: FC = () => {
   ];
 
   const handleDragSortEnd = async (
-    beforeIndex: number,
-    afterIndex: number,
-    newDataSource: any,
+    _beforeIndex: number,
+    _afterIndex: number,
+    newDataSource: Announcement[],
   ) => {
     updateAnncList(newDataSource);
-    await server.dao('POST /admin/information/sort', {
-      informationIds: newDataSource.map(item => item.id)
-    })
-    refreshAnncList()
-    message.success('排序成功');
+    try {
+      updateAnncList(await server.announcements.reorder(newDataSource.map(item => item.id)))
+      message.success('排序成功');
+    } catch (error) {
+      message.error((error as RiceError).message)
+      refreshAnncList()
+    }
   };
 
-  const dragHandleRender = (rowData: any, idx: any) => (
+  const dragHandleRender = (_rowData: Announcement, idx: number) => (
     <>
       <MenuOutlined style={ { cursor: 'grab', color: '#909399' } }/>
       &nbsp;&nbsp;{ idx + 1 }
@@ -85,7 +88,7 @@ const Announcements: FC = () => {
       dataSource={ anncList! }
       rowKey="id"
       search={ false }
-      dragSortKey="no"
+      dragSortKey="position"
       onDragSortEnd={ handleDragSortEnd }
       dragSortHandlerRender={ dragHandleRender }
       toolBarRender={ () => [

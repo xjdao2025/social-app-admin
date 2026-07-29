@@ -1,5 +1,5 @@
 import { attachIdToUrl } from "@/components/oss-image";
-import server from "@/server";
+import server from "@/server/rice";
 import DOMPurify from 'dompurify';
 import Quill from 'quill'
 import "quill/dist/quill.core.css";
@@ -63,7 +63,7 @@ const QuillEditor = forwardRef<QuillEditorApi, QuillEditorProps>((props, ref) =>
                 input.click();
                 input.onchange = async function (event) {
                   // @ts-ignore
-                  const { fileId } = await server.dao("POST /file/upload", { file: event.target.files[0], fileType: '1' });
+                  const { id: fileId } = await server.attachments.upload(event.target.files[0], 'image');
                   const url = attachIdToUrl(fileId)
                   const cursorPosition = editor.getSelection()?.index ?? 0;
                   editor.insertEmbed(

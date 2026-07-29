@@ -202,7 +202,13 @@ export const proposals = {
 export const badges = {
   list: (query?: PageQuery) => rice.page<Badge>('/api/admin/badges', query),
 
-  create: (params: { name: string; image_id?: string }) =>
+  /**
+   * 建勋章,可以顺带发给一批人。
+   *
+   * core 的 medal/create 收一个名单文件,建和发是同一次调用 —— 这里也一样,
+   * 在一个事务里。名单里一个人认不出来,勋章也不建。
+   */
+  create: (params: { name: string; image_id?: string; to?: string[] }) =>
     rice.post<Badge>('/api/admin/badges', params),
 
   holders: (badgeId: string, query?: PageQuery & { q?: string }) =>

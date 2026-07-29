@@ -2,33 +2,37 @@ import { Drawer, Typography } from "antd";
 import { ProTable } from "@ant-design/pro-components";
 import S from './userBadgeDetail.module.less'
 import { proColumn } from "@/utils/pro-column-builder";
-import { useBoolean, useRequest } from "ahooks";
-import server from "@/server";
+import { useBoolean } from "ahooks";
+import server, { type Badge, type BadgeHolder } from "@/server/rice";
+import { pageParams, toProTable } from "@/server/rice/table";
+import OssImage from "@/components/oss-image";
 import { useState } from "react";
 
 const UserBadgeDetail = (props: {
-  record: APIDao.WebApplicationVoAdminMedalPageVo
+  record: Badge
 }) => {
-  const { record = {} as APIDao.WebApplicationVoAdminMedalPageVo } = props;
-  const [drawerVis, { toggle, setTrue, setFalse }] = useBoolean(false)
+  const { record } = props;
+  const [drawerVis, { setTrue, setFalse }] = useBoolean(false)
   const [totalHolder, setTotalHolder] = useState(0)
 
   const columns = [
-    proColumn('昵称','nickName')
-      ._render((_, item) => {
+    proColumn('昵称','nickname')
+      ._render((_, item: BadgeHolder) => {
         return <div className={'flex items-center gap-[10px]'}>
-          <img alt={''} src={item.avatar} className={'w-[24px] h-[24px] rounded-full'} />
-          <span>{item.nickName}</span>
+          <OssImage attachId={item.avatar?.id} className={'w-[24px] h-[24px] rounded-full'} />
+          <span>{item.nickname}</span>
         </div>
       }),
+    proColumn('域名','handle'),
     proColumn('手机号','phone'),
     proColumn('邮箱','email'),
-    proColumn('手机号或邮箱','phoneOrEmail', { hideInTable: true })
-      ._enableSearch(),
+    proColumn('搜索','q', { hideInTable: true })
+      ._enableSearch()
+      ._extend({ fieldProps: { placeholder: '昵称 / 域名 / 手机号 / 邮箱' } }),
   ]
 
   return <>
-    <Typography.Link onClick={setTrue}>{record.quantity || 0}</Typography.Link>
+    <Typography.Link onClick={setTrue}>{record.holder_count ?? 0}</Typography.Link>
     <Drawer
       open={drawerVis}
       className={S.drawer}
@@ -41,18 +45,11 @@ const UserBadgeDetail = (props: {
         columns={columns}
         options={false}
         className={S.table}
+        rowKey="id"
         request={async (params) => {
-          const result = await server.dao('POST /admin/medal/users-holding/page', {
-            medalId: record.id,
-            ...params,
-            pageNum: params.current,
-          })
-          setTotalHolder(result?.total || 0)
-          return {
-            data: result?.items,
-            total: result?.total,
-            success: true,
-          }
+          const page = await server.badges.holders(record.id, pageParams(params))
+          setTotalHolder(page.meta.total ?? page.data.length)
+          return toProTable(page)
         }}
         search={{
           labelWidth: 100,

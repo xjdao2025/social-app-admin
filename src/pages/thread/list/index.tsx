@@ -3,7 +3,8 @@ import { ProTable } from "@ant-design/pro-components";
 import { proColumn } from "@/utils/pro-column-builder";
 import { Badge, Flex, message, Popconfirm, Typography } from 'antd'
 import PostDetailDrawer from "./PostDetailDrawer.tsx";
-import server, { proxyRequest } from "@/server";
+import server, { RiceError } from "@/server/rice";
+import { listPosts, type Post } from "@/server/post";
 import InitiatorAvatar from "@/pages/thread/proposal/InitiatorAvatar.tsx";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
@@ -26,7 +27,7 @@ const PostList = () => {
   const reload = () => {
     actionRef.current?.reload()
   }
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState<{ label: JSX.Element; value: string }[]>([]);
 
   const searchUser = async (words: string) => {
     const keyWords = words.trim()
@@ -34,24 +35,31 @@ const PostList = () => {
       setOptions([]);
       return
     }
-    const result = await server.dao('POST /admin/user-manage/user/search-by-name', {
-      nickName: keyWords
-    })
 
-    const options = result?.map((res) => ({
-      label: <InitiatorAvatar avatar={res.avatar} name={res.nickName || res.domainName} />, value: res.did
-    }))
+    try {
+      // core 有个专门的 search-by-name;rice 是同一个用户列表的 q
+      const { data } = await server.users.list({ q: keyWords, per_page: 20 })
 
-    setOptions(options)
+      setOptions(data.map(user => ({
+        label: <InitiatorAvatar avatar={user.avatar?.url} name={user.nickname || user.handle} />,
+        value: user.did,
+      })))
+    } catch (error) {
+      message.error((error as RiceError).message)
+      setOptions([])
+    }
   }
 
-  const takeOff = async (post: any) => {
-    await server.dao('POST /admin/post/take-off-post', {
-      uri: post.uri,
-      cid: post.cid
-    })
-    message.success('下架成功')
-    reload()
+  const takeOff = async (post: Post) => {
+    try {
+      // 贴文不在 rice 库里,这是一层代理 —— 意义是 post 服务的管理凭据
+      // 不必下发到浏览器。cid 不用传:uri 已经唯一。
+      await server.posts.takeDown(post.uri)
+      message.success('下架成功')
+      reload()
+    } catch (error) {
+      message.error((error as RiceError).message)
+    }
   }
 
   const columns = [
@@ -147,12 +155,14 @@ const PostList = () => {
         collapseRender: false,
         labelWidth: 'auto'
       }}
+      rowKey="uri"
       request={async (params) => {
-        console.log('params', params)
-        const result = await proxyRequest('/api/posts/list', {
-          ...params,
-          per_page: 10,
-          page: params.current,
+        const { current, pageSize, ...rest } = params
+        const result = await listPosts({
+          ...rest,
+          per_page: pageSize ?? 10,
+          page: current ?? 1,
+          // 已下架的不在这个列表里 —— 下架就是打上 blacklist 标签
           ban_labels: ['blacklist']
         })
         return {

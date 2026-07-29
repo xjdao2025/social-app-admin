@@ -1,6 +1,6 @@
 import Page from "@/components/Page";
 import { Link, useNavigate } from "@/router";
-import server from "@/server";
+import server, { RiceError } from "@/server/rice";
 import { useBoolean } from "ahooks";
 import { Breadcrumb, Button, Flex, message } from "antd";
 import { type FC, useRef } from 'react'
@@ -26,12 +26,11 @@ const NewAnnouncement: FC = () => {
 
     try {
       setLoading.setTrue()
-      await server.dao(
-        "POST /admin/information/create",
-        await editor.getData()
-      )
+      await server.announcements.create(await editor.getData())
       message.success("发布成功")
       navigate(-1)
+    } catch (error) {
+      message.error((error as RiceError).message)
     } finally {
       setLoading.setFalse()
     }

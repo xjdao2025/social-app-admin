@@ -1,12 +1,11 @@
 import Page from "@/components/Page";
 import { DragSortTable, ProColumns } from "@ant-design/pro-components";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
 import { proColumn } from "@/utils/pro-column-builder";
 import { Button, message, Space, Typography } from "antd";
 import server, { RiceError, type Node } from "@/server/rice";
 import OssImage from "@/components/oss-image";
-import pcHolder from '@/assets/banner/pc.png'
 import AddNode from "./AddNode.tsx";
 
 const { Link } = Typography;

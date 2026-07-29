@@ -1,13 +1,13 @@
 import QuillEditor, { type QuillEditorApi } from '@/components/Quill'
-import server from "@/server";
+import server from "@/server/rice";
 import { Input } from "antd";
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import S from './index.module.less'
 
 export type EditorApi = {
   validate: () => void
-  getData: () => Promise<{ name: string, attachId: string }>
-  setData: (title: string, attachId: string) => Promise<void>
+  getData: () => Promise<{ title: string, attachment_id: string }>
+  setData: (title: string, attachmentUrl: string) => Promise<void>
 }
 
 type EditorProps = {}
@@ -34,34 +34,23 @@ const Editor = forwardRef<EditorApi, EditorProps>((_props, ref) => {
         getData: async () => {
           const content = quillRef.current?.getHtml() ?? ""
 
-          const fileResponse = await server.dao(
-            "POST /file/upload",
-            {
-              fileType: 1,
-              file: new File([ content ], "announcement.html", { type: "text/html" })
-            }
+          // 公告正文是一个 html 附件,不是库里的一个字段 —— core 也是这么存的
+          const attachment = await server.attachments.upload(
+            new File([ content ], "announcement.html", { type: "text/html" }),
+            'file'
           );
 
           return {
-            name: title,
-            attachId: fileResponse!.fileId
+            title,
+            attachment_id: attachment.id
           }
         },
-        setData: async (title: string, attachId: string) => {
+        setData: async (title: string, attachmentUrl: string) => {
           setTitle(title)
 
-          const [ fileType, fileId ] = attachId.split('-')
-          const blob = await server.dao(
-            "GET /file/download",
-            // @ts-ignore
-            { fileType, fileId, autoDownload: true },
-            {
-              getWholeBizData: true,
-              responseType: 'blob'
-            }
-          )
-          // @ts-ignore
-          quillRef.current?.setHtml(await blob.text())
+          // 附件是公开可读的,直接 fetch 就行,不必走带令牌的客户端
+          const response = await fetch(attachmentUrl)
+          quillRef.current?.setHtml(await response.text())
         }
       }
     }

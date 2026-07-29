@@ -11,10 +11,10 @@ import readXlsxFile from 'read-excel-file/browser'
  * 从表格里粘一列手机号,末尾常带几个空行。
  */
 export async function parseRecipients(file: File): Promise<string[]> {
-  const rows = await readXlsxFile(file)
+  const rows = (await readXlsxFile(file)) as unknown[][]
 
   return rows
-    .map(row => cell(row[0]))
+    .map(row => cell(row?.[0]))
     .filter(value => value !== '' && looksLikeContact(value))
 }
 
