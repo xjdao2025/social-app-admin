@@ -1,0 +1,36 @@
+src/pages/place/foundation/payload.test.ts
+  s_c7c294ddcc30bc::t_c2a21618dd6d61 1-46
+src/server/rice/index.test.ts
+  s_c7c294ddcc30bc::t_d2f3b1b8878df2 180-181,184-185
+src/pages/thread/proposal/index.tsx
+  s_c7c294ddcc30bc::t_ff14c9b89f3b3b 72
+src/pages/place/foundation/payload.ts
+  s_c7c294ddcc30bc::t_f35324ef03f348 1-33
+src/pages/setting/announcements/_components/Editor/index.tsx
+  s_c7c294ddcc30bc::t_18e32799fff4d6 51-54,57-58
+src/pages/place/points/index.tsx
+  s_c7c294ddcc30bc::t_796a511cf24c2f 31
+src/pages/place/foundation/index.tsx
+  s_c7c294ddcc30bc::t_21d6466320f08e 7-8,55,57
+src/server/rice/index.ts
+  s_c7c294ddcc30bc::t_d2f3b1b8878df2 246-254,261
+src/utils/pro-column-builder/index.tsx
+  s_c7c294ddcc30bc::t_796a511cf24c2f 57-65,69-70,111-112
+  s_c7c294ddcc30bc::t_e294f0862fbf82 113-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "887a7bef5bc99d7a8b6ca10cd44965c6eeebe999",
+  "prompts": {},
+  "sessions": {
+    "s_c7c294ddcc30bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4902de79-d943-413e-b8b7-c5a851e32947",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
