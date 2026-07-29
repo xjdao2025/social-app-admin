@@ -177,10 +177,12 @@ describe('配置、模板与贴文', () => {
 })
 
 describe('附件', () => {
-  it('上传走 C 端的 /api/attachments,不是管理端', async () => {
+  // 管理端令牌在 C 端那个上传口上是 401 —— 后台所有带图的表单都靠这条路径
+  it('上传走管理端的上传口,不是 C 端那个', async () => {
     const file = new File(['x'], 'a.png', { type: 'image/png' })
 
-    expect(await called(() => server.attachments.upload(file))).toBe('POST /api/attachments')
+    expect(await called(() => server.attachments.upload(file)))
+      .toBe('POST /api/admin/attachments')
   })
 
   it('上传带的是 multipart,kind 一起送', async () => {

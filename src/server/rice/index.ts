@@ -243,14 +243,22 @@ export const posts = {
   restore: (uri: string) => rice.delete('/api/admin/post_takedowns', { data: { uri } }),
 }
 
-/** 附件上传。**要登录** —— core 的上传接口是 AllowAnonymous。 */
+/**
+ * 附件上传。
+ *
+ * 走**管理端**那个上传口(`/api/admin/attachments`),不是 C 端的
+ * `/api/attachments` —— 两套令牌互不通用,管理端令牌在 C 端那个口上是 401。
+ * 两条路由背后是同一个控制器,只有认证方式不同。
+ *
+ * 上传要登录 —— core 的上传接口标着 AllowAnonymous,谁都能往服务器写文件。
+ */
 export const attachments = {
   upload: (file: File, kind: 'image' | 'file' = 'image') => {
     const form = new FormData()
     form.append('file', file)
     form.append('kind', kind)
 
-    return rice.post<Attachment>('/api/attachments', form)
+    return rice.post<Attachment>('/api/admin/attachments', form)
   },
 
   /** 附件的可访问地址。响应里本来就有 `url`,这个用于只拿到 id 的地方。 */

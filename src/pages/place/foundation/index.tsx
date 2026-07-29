@@ -4,7 +4,8 @@ import ProFormUploadFile from "@/components/styled-components/ProFormUploadFile"
 import { Flex, Form, message, Typography } from "antd";
 import S from './index.module.less'
 import { useBoolean, useRequest } from "ahooks";
-import server, { RiceError, type SiteSettings } from "@/server/rice";
+import server, { RiceError } from "@/server/rice";
+import { toSettingsPayload, type FoundationFields } from "./payload";
 import { useEffect } from "react";
 
 const FoundationSetting = () => {
@@ -51,13 +52,9 @@ const FoundationSetting = () => {
         form={form}
         submitter={false}
         initialValues={globalConfig || {}}
-        onFinish={async (fields: Partial<SiteSettings> & { document_ids?: string | string[] }) => {
+        onFinish={async (fields: FoundationFields) => {
           try {
-            // document_ids 传了就是整份替换,顺序即展示顺序
-            await server.settings.update({
-              fund_scale: fields.fund_scale,
-              document_ids: ([] as string[]).concat(fields.document_ids ?? []),
-            });
+            await server.settings.update(toSettingsPayload(fields));
             setFalse();
             message.success('编辑成功')
             return true

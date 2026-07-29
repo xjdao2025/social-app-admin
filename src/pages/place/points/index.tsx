@@ -28,7 +28,7 @@ const PlacePoints = () => {
     proColumn('邮箱', 'email')
       ._render((_, record: Grant) => record.to?.email || '—'),
     proColumn('发放时间', 'time')
-      ._dateRange('since', 'until', 'YYYY-MM-DDTHH:mm:ss[Z]')
+      ._dateRange('since', 'until')
       ._enableSearch()
       ._render((_, record: Grant) => dayjs(record.inserted_at).format('YYYY/MM/DD HH:mm:ss')),
     proColumn('发放稻米', 'amount'),

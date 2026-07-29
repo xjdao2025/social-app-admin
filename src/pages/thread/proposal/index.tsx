@@ -69,7 +69,7 @@ const PostList = () => {
         return record.listed ? <Badge status="success" text="已上架" /> : <Badge status="error" text="已下架" />
       }),
     proColumn('发布时间', 'inserted_at',{ width: 125 })
-      ._dateRange('since', 'until', 'YYYY-MM-DD')
+      ._dateRange('since', 'until')
       ._enableSearch()
       ._render((_, record: Proposal) => dayjs(record.inserted_at).format(timeFormat)),
     proColumn('截止时间', 'closes_at',{ width: 125 })

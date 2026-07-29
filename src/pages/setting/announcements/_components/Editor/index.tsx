@@ -48,8 +48,14 @@ const Editor = forwardRef<EditorApi, EditorProps>((_props, ref) => {
         setData: async (title: string, attachmentUrl: string) => {
           setTitle(title)
 
+          // 没有正文附件时什么都不做。`fetch('')` 会去取当前页面 ——
+          // 也就是把这个单页应用的 index.html 灌进编辑器。
+          if (!attachmentUrl) return
+
           // 附件是公开可读的,直接 fetch 就行,不必走带令牌的客户端
           const response = await fetch(attachmentUrl)
+          if (!response.ok) return
+
           quillRef.current?.setHtml(await response.text())
         }
       }
