@@ -4,44 +4,51 @@ import { useEffect, useRef, useState } from "react";
 import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
 import { proColumn } from "@/utils/pro-column-builder";
 import { Button, message, Space, Typography } from "antd";
-import server from "@/server";
+import server, { RiceError, type Node } from "@/server/rice";
 import OssImage from "@/components/oss-image";
 import pcHolder from '@/assets/banner/pc.png'
 import AddNode from "./AddNode.tsx";
 
 const { Link } = Typography;
 
-const Banner = () => {
-  const [dataSrc, setDataSrc] = useState<APIDao.WebEndpointsAdminNodeAdminNodeListVo[]>([])
+const Nodes = () => {
+  const [dataSrc, setDataSrc] = useState<Node[]>([])
 
   const reload = async () => {
-    const result = await server.dao('POST /admin/node/list')
-    setDataSrc(result)
+    try {
+      setDataSrc(await server.nodes.list())
+    } catch (error) {
+      message.error((error as RiceError).message)
+    }
   }
 
   useEffect(() => {
     reload()
   }, []);
 
-  const delBanner = async (nodeId: string) => {
-    await server.dao('POST /admin/node/delete', { nodeId });
-    reload();
-    message.success('删除成功');
+  const delNode = async (id: string) => {
+    try {
+      await server.nodes.remove(id);
+      reload();
+      message.success('删除成功');
+    } catch (error) {
+      message.error((error as RiceError).message)
+    }
   }
 
-  const columns: ProColumns<APIDao.WebEndpointsAdminNodeAdminNodeListVo>[] = [
-    proColumn('排序', 'no', { width: 120 }),
+  const columns: ProColumns<Node>[] = [
+    proColumn('排序', 'position', { width: 120 }),
     proColumn('节点名称', 'node', { width: 340 })
-      ._render((_, record) => {
+      ._render((_, record: Node) => {
         return <div className={'flex items-center gap-[10px]'}>
-          <OssImage attachId={record.logo} className={'w-[28px] h-[28px] rounded-full'} />
+          <OssImage attachId={record.logo?.id} className={'w-[28px] h-[28px] rounded-full'} />
           <span>{record.name}</span>
         </div>
       }),
     proColumn('介绍', 'description', { ellipsis: true, width: 340 }),
     proColumn('操作', '', { width: 300 })
       ._option()
-      ._render((_, record) => {
+      ._render((_, record: Node) => {
         return <Space size={'middle'}>
           <AddNode
             title={'编辑'}
@@ -53,26 +60,28 @@ const Banner = () => {
           />
           <Link
             type="danger"
-            onClick={() => delBanner(record.nodeId)}
+            onClick={() => delNode(record.id)}
           >删除</Link>
         </Space>
       }),
   ];
 
   const handleDragSortEnd = async (
-    beforeIndex: number,
-    afterIndex: number,
-    newDataSource: any,
+    _beforeIndex: number,
+    _afterIndex: number,
+    newDataSource: Node[],
   ) => {
     setDataSrc(newDataSource);
-    await server.dao('POST /admin/node/sort', {
-      nodeIds: newDataSource.map(item => item.nodeId)
-    })
-    reload()
-    message.success('排序成功');
+    try {
+      setDataSrc(await server.nodes.reorder(newDataSource.map(item => item.id)))
+      message.success('排序成功');
+    } catch (error) {
+      message.error((error as RiceError).message)
+      reload()
+    }
   };
 
-  const dragHandleRender = (rowData: any, idx: any) => (
+  const dragHandleRender = (_rowData: Node, idx: number) => (
     <>
       <MenuOutlined style={{ cursor: 'grab', color: '#909399' }} />
       &nbsp;&nbsp;{idx + 1}
@@ -89,9 +98,9 @@ const Banner = () => {
       headerTitle={'节点列表'}
       columns={columns}
       dataSource={dataSrc}
-      rowKey="nodeId"
+      rowKey="id"
       search={false}
-      dragSortKey="no"
+      dragSortKey="position"
       onDragSortEnd={handleDragSortEnd}
       dragSortHandlerRender={dragHandleRender}
       toolBarRender={() => [
@@ -112,4 +121,4 @@ const Banner = () => {
   </Page>
 }
 
-export default Banner;
+export default Nodes;

@@ -2,8 +2,8 @@ import { ModalForm, ProFormText } from "@ant-design/pro-components";
 import S from './index.module.less';
 import { Button, Form, message, Modal } from "antd";
 import { FC } from "react";
-import server from "@/server";
-import FormRoleItem, { ACCOUNT_ROLE_TYPE } from "./components/FormRoleItem";
+import server, { RiceError } from "@/server/rice";
+import FormRoleItem from "./components/FormRoleItem";
 
 type AddUserProps = {
   trigger: JSX.Element
@@ -25,35 +25,40 @@ const AddUser: FC<AddUserProps> = (props) => {
       trigger={props.trigger}
       layout={'horizontal'}
       submitter={{
-        render: (props) => {
+        render: (submitterProps) => {
           return <div className={'pt-[16px]'}>
             <Button
               type="primary"
-              onClick={props.submit}
+              onClick={submitterProps.submit}
             >确认</Button>
           </div>
         }
       }}
       onFinish={async (values) => {
-        const res = await server.dao('POST /admin/admin-user/create', {
-          ...values,
-          phoneRegion: '86',
-        })
+        try {
+          const admin = await server.admins.create({
+            phone: values.phone,
+            phone_region: '86',
+            role: values.role,
+          })
 
-        if (res?.password) {
+          // 初始密码只有这一刻能看到 —— 库里只有摘要
           modal.info({
             title: "新增成功",
             content: (
               <>
-                <div>账号: {values.phone}</div>
-                <div>初始密码: {res.password}</div>
+                <div>账号: {admin.phone}</div>
+                <div>初始密码: {admin.initial_password}</div>
               </>
             )
           })
-        }
 
-        props.reload?.()
-        return true
+          props.reload?.()
+          return true
+        } catch (error) {
+          message.error((error as RiceError).message)
+          return false
+        }
       }}
     >
       <div className={'mt-[15px]'} />

@@ -1,7 +1,6 @@
 import { ImgHTMLAttributes } from "react";
 import { Image } from "antd";
-
-
+import { attachments } from "@/server/rice";
 
 type OssImageProps = Omit<ImgHTMLAttributes<any>, 'src'> & {
   attachId?: string;
@@ -10,19 +9,14 @@ type OssImageProps = Omit<ImgHTMLAttributes<any>, 'src'> & {
   srcType?: 'id' | 'url'
 }
 
-
+/**
+ * 附件 id → 可访问地址。
+ *
+ * core 的 id 里编着文件类型(`2-abc123` 这种,还得拆出来拼进 query),
+ * rice 的附件 id 就是 id,地址是 `/api/attachments/<id>`。
+ */
 export function attachIdToUrl(attachId?: string) {
-  if (!attachId) return '';
-  try {
-    if (attachId.split('-').length > 1) {
-      const [fileType, fileId] = attachId.split('-');
-      return `/api/v1/file/download?fileId=${fileId}&fileType=${fileType}`;
-    } else {
-      return `/api/v1/file/download?fileId=${attachId}&fileType=1`;
-    }
-  } catch (e) {
-    return '';
-  }
+  return attachments.url(attachId);
 }
 
 export default function OssImage(props: OssImageProps) {

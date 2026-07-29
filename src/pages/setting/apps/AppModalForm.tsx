@@ -11,9 +11,9 @@ const AppModalForm: FC<AppModalFormProps> = (props) => {
     <ModalForm
       width={ 600 }
       submitter={ {
-        render: (props) => {
+        render: (submitterProps) => {
           return <Flex justify={ 'center' } className={ 'w-full' }>
-            <Button type={ 'primary' } onClick={ props.submit }>确认</Button>
+            <Button type={ 'primary' } onClick={ submitterProps.submit }>确认</Button>
           </Flex>
         }
       } }
@@ -25,10 +25,9 @@ const AppModalForm: FC<AppModalFormProps> = (props) => {
       } }
       { ...props }
     >
-      <ProFormText hidden name="appId"/>
       <ProFormUpload
         label="应用图标"
-        name="logo"
+        name="logo_id"
         maxSize={ 5 }
         listType="picture-card"
         className="size-25 rounded-5"
@@ -53,7 +52,7 @@ const AppModalForm: FC<AppModalFormProps> = (props) => {
       />
       <ProFormText
         label="描述"
-        name="desc"
+        name="description"
         fieldProps={ { maxLength: 16, showCount: true } }
         rules={ [
           { required: true, message: '请输入描述' },
@@ -61,7 +60,7 @@ const AppModalForm: FC<AppModalFormProps> = (props) => {
       />
       <ProFormText
         label="链接"
-        name="link"
+        name="url"
         fieldProps={ { type: 'url' } }
         rules={ [
           { required: true, message: '请输入链接' },

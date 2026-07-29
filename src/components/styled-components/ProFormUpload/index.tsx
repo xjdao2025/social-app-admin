@@ -4,7 +4,7 @@ import S from './index.module.less';
 import { ProFormItem } from "@ant-design/pro-components";
 import { FieldProps } from "rc-field-form/lib/Field";
 import cx from "classnames";
-import server from "@/server";
+import server, { RiceError } from "@/server/rice";
 import { useEffect, useState } from "react";
 import { UploadFile } from "antd/lib";
 import { useTranslation } from "react-i18next";
@@ -74,37 +74,29 @@ const StyledUpload = (props: StyledUploadFormProps) => {
   const { t } = useTranslation('translation');
 
   useEffect(() => {
-    const fileIdList = ([]).concat(value || []);
+    const fileIdList = ([] as string[]).concat(value || []);
 
     setFileList(prevList => {
       const hash = prevList.reduce((h, item) => {
-        h[item.response] = item
+        h[item.response as string] = item
         return h
       }, {} as Record<string, UploadFile>);
 
-      return fileIdList.map(info => {
-        let fileId = info as string;
-        let url = ''
-        let fileName = ''
-        if (fileId.split('-').length > 1) {
-          const [fileType, fileRealId, ...rest] = fileId.split('-');
-          fileName = rest.join('-');
-          url = `/api/v1/file/download?fileId=${fileRealId}&fileType=${fileType}`;
-        } else {
-          url = `/api/v1/file/download?fileId=${fileId}&fileType=1`;
-        }
-
+      // rice 的附件 id 就是 id —— core 那边 id 里还编着文件类型和文件名,
+      // 取用之前得先拆一遍
+      return fileIdList.map(fileId => {
+        const url = server.attachments.url(fileId);
 
         if (hash[fileId]) {
-          return ({...hash[fileId], url})
+          return ({ ...hash[fileId], url })
         }
 
         return ({
           uid: fileId,
-          name: fileName,
-          response: info,
+          name: '',
+          response: fileId,
           url,
-          status: 'done'
+          status: 'done' as const
         })
       })
     });
@@ -138,10 +130,12 @@ const StyledUpload = (props: StyledUploadFormProps) => {
         const { file } = options;
 
         try {
-          const response = await server.dao("POST /file/upload", { file, fileType: '1' });
-          options.onSuccess?.(response.fileId);
+          // 上传要登录 —— core 的上传接口是 AllowAnonymous,谁都能往服务器写文件
+          const attachment = await server.attachments.upload(file as File, 'image');
+          options.onSuccess?.(attachment.id);
         } catch (e) {
-          options.onError?.(e);
+          message.error((e as RiceError).message);
+          options.onError?.(e as Error);
           return;
         }
       }}

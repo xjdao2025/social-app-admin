@@ -1,45 +1,46 @@
 import { ModalForm, ProFormSelect, ProFormText, ProFormTextArea } from "@ant-design/pro-components";
 import { useRequest } from "ahooks";
-import { Button, Flex } from "antd";
+import { Button, Flex, message } from "antd";
 import ProFormUpload from "@/components/styled-components/ProFormUpload";
 import { ModalFormProps } from "@ant-design/pro-form/es/layouts/ModalForm";
 import { debounce } from "lodash";
 import { useMemo } from "react";
 import S from './index.module.less'
-import server from "@/server";
+import server, { RiceError, type Node } from "@/server/rice";
 
-type AddBannerProps = {
+type AddNodeProps = {
   reload?: () => void
-} & ModalFormProps
+  initialValues?: Node
+} & Omit<ModalFormProps, 'initialValues'>
 
-const AddBanner = (props: AddBannerProps) => {
-  const {initialValues} = props
-  // @ts-ignore
+const AddNode = (props: AddNodeProps) => {
+  const { initialValues, reload, ...rest } = props
+
+  // core 有个专门的 unbound-node-user-search 接口;rice 是同一个用户列表加过滤
   const {
-    data: nodeUsers,
+    data: candidates,
     run: searchNodeUsers
   } = useRequest(
-    async (phoneOrEmail = "") => server.dao('POST /admin/user-manage/user/unbound-node-user-search', { phoneOrEmail }),
-    {
-      manual: true
-    }
+    async (q = "") => (await server.users.list({ q, node_member: true, per_page: 20 })).data,
+    { manual: true }
   )
 
+  // 编辑时,当前节点主未必在搜索结果里 —— 先把它放进去,否则下拉框显示成一个裸 id
   const userList = useMemo(
     () => {
-      return [ initialValues ]
-        .concat(nodeUsers?.filter(item => item.userId !== initialValues?.userId))
-        .filter(Boolean) ?? []
+      const owner = initialValues?.owner
+      const rest = (candidates ?? []).filter(item => item.id !== owner?.id)
+      return owner ? [owner, ...rest] : rest
     },
-    [ nodeUsers, initialValues ]
+    [candidates, initialValues]
   )
 
   return <ModalForm
     width={600}
     submitter={{
-      render: (props) => {
+      render: (submitterProps) => {
         return <Flex justify={'center'} className={'w-full'}>
-          <Button type={'primary'} onClick={props.submit}>确认</Button>
+          <Button type={'primary'} onClick={submitterProps.submit}>确认</Button>
         </Flex>
       }
     }}
@@ -49,19 +50,31 @@ const AddBanner = (props: AddBannerProps) => {
       centered: true,
       destroyOnClose: true
     }}
-    {...props}
+    {...rest}
+    initialValues={initialValues && {
+      ...initialValues,
+      logo_id: initialValues.logo?.id,
+      user_id: initialValues.owner?.id,
+    }}
     onFinish={async (values) => {
-      const user = userList.find((item) => item.userId === values.userId)
-      const api = values.nodeId ? 'POST /admin/node/modify' : 'POST /admin/node/create';
-      await server.dao(api, {...values, userId: user?.userId, userDid: user?.userDid})
-      props.reload?.()
-      return true
+      try {
+        if (initialValues) {
+          await server.nodes.update(initialValues.id, values)
+        } else {
+          await server.nodes.create(values)
+        }
+        message.success((rest.title ?? '保存') + '成功')
+        reload?.()
+        return true
+      } catch (error) {
+        message.error((error as RiceError).message)
+        return false
+      }
     }}
   >
-    <ProFormText hidden name={'nodeId'} />
     <ProFormUpload
       label={'节点logo'}
-      name={'logo'}
+      name={'logo_id'}
       maxSize={5}
       listType="picture-circle"
       circleClassName={'!bg-transparent !border-0'}
@@ -85,11 +98,11 @@ const AddBanner = (props: AddBannerProps) => {
         filterOption: false,
         onSearch: debounce(searchNodeUsers, 300),
         options: userList.map(item => ({
-          label: [item.phone, item.email].filter(Boolean).join('/'),
-          value: item.userId
+          label: [item.nickname, item.handle].filter(Boolean).join(' / ') || item.id,
+          value: item.id
         })),
       }}
-      name="userId"
+      name="user_id"
       rules={[
         { required: true, message: '请选择节点用户' }
       ]}
@@ -112,4 +125,4 @@ const AddBanner = (props: AddBannerProps) => {
   </ModalForm>
 }
 
-export default AddBanner;
+export default AddNode;

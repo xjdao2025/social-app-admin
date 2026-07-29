@@ -4,18 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
 import { proColumn } from "@/utils/pro-column-builder";
 import { Button, message, Space, Typography } from "antd";
-import server from "@/server";
+import server, { RiceError, type Banner as BannerType } from "@/server/rice";
 import OssImage from "@/components/oss-image";
 import AddBanner from "@/pages/setting/banner/AddBanner.tsx";
 
 const { Link } = Typography;
 
 const Banner = () => {
-  const [dataSrc, setDataSrc] = useState<APIDao.WebApplicationVoBannerVo[]>([])
+  const [dataSrc, setDataSrc] = useState<BannerType[]>([])
 
   const reload = async () => {
-    const result = await server.dao('POST /admin/banner/list')
-    setDataSrc(result)
+    try {
+      setDataSrc(await server.banners.list())
+    } catch (error) {
+      message.error((error as RiceError).message)
+    }
   }
 
   useEffect(() => {
@@ -23,21 +26,25 @@ const Banner = () => {
   }, []);
 
   const delBanner = async (id: string) => {
-    await server.dao('POST /admin/banner/delete', { id });
-    reload();
-    message.success('删除成功');
+    try {
+      await server.banners.remove(id);
+      reload();
+      message.success('删除成功');
+    } catch (error) {
+      message.error((error as RiceError).message)
+    }
   }
 
-  const columns: ProColumns<APIDao.WebApplicationVoBannerVo>[] = [
-    proColumn('排序', 'no'),
-    proColumn('Banner', 'banner')
-      ._render((_, record) => {
-        return <OssImage attachId={record.bannerFileId} className={'w-[188px] h-[100px]'} />
+  const columns: ProColumns<BannerType>[] = [
+    proColumn('排序', 'position'),
+    proColumn('Banner', 'image')
+      ._render((_, record: BannerType) => {
+        return <OssImage attachId={record.image?.id} className={'w-[188px] h-[100px]'} />
       }),
-    proColumn('链接', 'linkAddress'),
+    proColumn('链接', 'url'),
     proColumn('操作')
       ._option()
-      ._render((_, record) => {
+      ._render((_, record: BannerType) => {
         return <Space size={'middle'}>
           <AddBanner
             title={'编辑'}
@@ -53,19 +60,21 @@ const Banner = () => {
   ];
 
   const handleDragSortEnd = async (
-    beforeIndex: number,
-    afterIndex: number,
-    newDataSource: any,
+    _beforeIndex: number,
+    _afterIndex: number,
+    newDataSource: BannerType[],
   ) => {
     setDataSrc(newDataSource);
-    await server.dao('POST /admin/banner/sort', {
-      bannerIds: newDataSource.map(item => item.id)
-    })
-    reload()
-    message.success('排序成功');
+    try {
+      setDataSrc(await server.banners.reorder(newDataSource.map(item => item.id)))
+      message.success('排序成功');
+    } catch (error) {
+      message.error((error as RiceError).message)
+      reload()
+    }
   };
 
-  const dragHandleRender = (rowData: any, idx: any) => (
+  const dragHandleRender = (_rowData: BannerType, idx: number) => (
     <>
       <MenuOutlined style={{ cursor: 'grab', color: '#909399' }} />
       &nbsp;&nbsp;{idx + 1}
@@ -81,7 +90,7 @@ const Banner = () => {
       rowKey="id"
       search={false}
       pagination={false}
-      dragSortKey="no"
+      dragSortKey="position"
       onDragSortEnd={handleDragSortEnd}
       dragSortHandlerRender={dragHandleRender}
       toolBarRender={() => [

@@ -1,40 +1,47 @@
 import Page from "@/components/Page";
 import { proColumn } from "@/utils/pro-column-builder";
 import { ProTable } from "@ant-design/pro-components";
-import { Button, Tag, Typography } from "antd";
+import { Button, message, Popconfirm, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import AddUser from "./_components/AddUser";
-import server from "@/server";
+import server, { RiceError, type Admin } from "@/server/rice";
+import { tableRequest } from "@/server/rice/table";
 import { useRef } from "react";
 import { ActionType } from "@ant-design/pro-table/es/typing";
-import cx from "classnames";
 
 const User = () => {
   const actionRef = useRef<ActionType>()
 
+  const remove = async (id: string) => {
+    try {
+      // 删除会连带撤销该管理员的全部会话
+      await server.admins.remove(id)
+      message.success('删除成功')
+      actionRef.current?.reload()
+    } catch (error) {
+      message.error((error as RiceError).message)
+    }
+  }
+
   const columns = [
     proColumn('角色', 'role')
-      ._render((_, record)=> {
-        if (record.special) return '超级管理员'
-        return {
-          1: '管理员',
-          2: '运营',
-        }[record.role]
+      ._render((_, record: Admin) => {
+        if (record.superuser) return '超级管理员'
+        return { admin: '管理员', operator: '运营' }[record.role] ?? record.role
       }),
     proColumn('账号', 'phone'),
+    proColumn('昵称', 'nickname'),
     proColumn('操作')
       ._option()
-      ._render((_, record) => {
-        if (record.special) return '-'
-        return <Typography.Link
-          type={'danger'}
-          onClick={async () => {
-            await server.dao('POST /admin/admin-user/delete', {
-              id: record.id
-            })
-            actionRef.current?.reload()
-          }}
-        >删除</Typography.Link>
+      ._render((_, record: Admin) => {
+        // 超管删不掉,自己也删不掉自己 —— 服务端也拦,这里只是不给按钮
+        if (record.superuser) return '-'
+        return <Popconfirm
+          title={'确定删除该管理员吗？他当前的登录会立刻失效。'}
+          onConfirm={() => remove(record.id)}
+        >
+          <Typography.Link type={'danger'}>删除</Typography.Link>
+        </Popconfirm>
       }),
   ]
 
@@ -52,15 +59,8 @@ const User = () => {
           </Button>} reload={() => actionRef.current?.reload()} />
         ]
       }}
-      request={async (params) => {
-        const obj = {...params, pageNum: params.current}
-        const result = await server.dao('POST /admin/admin-user/page', obj)
-        return {
-          data: result?.items,
-          total: result?.total,
-          success: true
-        }
-      }}
+      rowKey="id"
+      request={tableRequest(query => server.admins.list(query))}
       pagination={{
         showTotal: false,
         hideOnSinglePage: true

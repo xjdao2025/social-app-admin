@@ -3,27 +3,30 @@ import { Checkbox } from 'antd';
 import cx from 'classnames'
 import { FC, useEffect, useState } from 'react';
 
-export enum ACCOUNT_ROLE_TYPE {
-  ADMIN = 1,
-  OPERATOR = 2
-}
+/** rice 的角色是字符串,不是 core 的 1/2 —— 服务端的 check 约束只认这两个值。 */
+export type AccountRole = 'admin' | 'operator'
 
-type RoleItemType = { value: number; name: string; work: string }
+export const ACCOUNT_ROLE_TYPE = {
+  ADMIN: 'admin',
+  OPERATOR: 'operator',
+} as const
+
+type RoleItemType = { value: AccountRole; name: string }
 
 type FormRoleItemProps = {
-  value?: number;
-  onChange?: (value: number) => void
+  value?: AccountRole;
+  onChange?: (value: AccountRole) => void
 }
 
 const FormRoleItem: FC<FormRoleItemProps> = (props) => {
-  const [curRole, setCurRole] = useState<ACCOUNT_ROLE_TYPE | undefined>(ACCOUNT_ROLE_TYPE.ADMIN);
+  const [curRole, setCurRole] = useState<AccountRole | undefined>(ACCOUNT_ROLE_TYPE.ADMIN);
 
   useEffect(() => {
     if (!curRole) return
     props.onChange?.(curRole)
   }, [curRole])
 
-  const roles = [{
+  const roles: RoleItemType[] = [{
     value: ACCOUNT_ROLE_TYPE.ADMIN,
     name: '管理员',
   },{
@@ -46,7 +49,7 @@ export default FormRoleItem;
 function RoleItem(props: {
   role: RoleItemType;
   checked?: boolean;
-  onChange?: (value: ACCOUNT_ROLE_TYPE) => void
+  onChange?: (value: AccountRole) => void
 }) {
   const { role, checked } = props;
   return <div

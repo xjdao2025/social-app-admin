@@ -2,21 +2,22 @@ import { ModalForm, ProFormText } from "@ant-design/pro-components";
 import { Button, Flex, message } from "antd";
 import ProFormUpload from "@/components/styled-components/ProFormUpload";
 import { ModalFormProps } from "@ant-design/pro-form/es/layouts/ModalForm";
-import server from "@/server";
+import server, { RiceError, type Banner } from "@/server/rice";
 
 type AddBannerProps = {
   reload?: () => void
-} & ModalFormProps
+  initialValues?: Banner
+} & Omit<ModalFormProps, 'initialValues'>
 
 const AddBanner = (props: AddBannerProps) => {
-  const { reload, ...rest } = props;
+  const { reload, initialValues, ...rest } = props;
 
   return <ModalForm
     width={450}
     submitter={{
-      render: (props) => {
+      render: (submitterProps) => {
         return <Flex justify={'center'} className={'w-full'}>
-          <Button type={'primary'} onClick={props.submit}>确认</Button>
+          <Button type={'primary'} onClick={submitterProps.submit}>确认</Button>
         </Flex>
       }
     }}
@@ -27,18 +28,27 @@ const AddBanner = (props: AddBannerProps) => {
       destroyOnClose: true
     }}
     {...rest}
+    // 表单里的图片是附件 id,列表里的是整个附件对象
+    initialValues={initialValues && { ...initialValues, image_id: initialValues.image?.id }}
     onFinish={async (values) => {
-      const api = values.id ? 'POST /admin/banner/modify' : 'POST /admin/banner/create';
-      await server.dao(api, values)
-      message.success(rest.title + '成功')
-      reload?.()
-      return true
+      try {
+        if (initialValues) {
+          await server.banners.update(initialValues.id, values)
+        } else {
+          await server.banners.create(values)
+        }
+        message.success(rest.title + '成功')
+        reload?.()
+        return true
+      } catch (error) {
+        message.error((error as RiceError).message)
+        return false
+      }
     }}
   >
-    <ProFormText name={'id'} hidden />
     <ProFormUpload
       label={'Banner'}
-      name={'bannerFileId'}
+      name={'image_id'}
       maxSize={5}
       className={'w-[188px] h-[100px]'}
       descriptions={[
@@ -48,7 +58,7 @@ const AddBanner = (props: AddBannerProps) => {
       ]}
       descClassName={'mt-[15px]'}
     />
-    <ProFormText label={'链接地址'} name={'linkAddress'} />
+    <ProFormText label={'链接地址'} name={'url'} />
   </ModalForm>
 }
 
