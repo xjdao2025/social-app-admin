@@ -1,0 +1,27 @@
+src/server/post.ts
+  s_c7c294ddcc30bc::t_9e21218582d0a3 83-85
+  s_c7c294ddcc30bc::t_051661e5b013b3 1,8-11,15-16,20-30,44,61-66,69-81
+  s_c7c294ddcc30bc::t_d695d704709582 82
+src/pages/thread/list/index.tsx
+  s_c7c294ddcc30bc::t_006ab001f45ecf 7,161-179
+src/server/post.test.ts
+  s_c7c294ddcc30bc::t_677213ef369753 14
+  s_c7c294ddcc30bc::t_9e21218582d0a3 3,15,48
+  s_c7c294ddcc30bc::t_e0fd3db5edc2d6 1-2,4-13,16-47,49-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "c73a6ae3f0be5387be4687c7487a6d0f1ce1baf5",
+  "prompts": {},
+  "sessions": {
+    "s_c7c294ddcc30bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4902de79-d943-413e-b8b7-c5a851e32947",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
