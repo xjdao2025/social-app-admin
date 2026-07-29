@@ -1,0 +1,61 @@
+src/pages/setting/announcements/_components/Editor/index.tsx
+  s_c7c294ddcc30bc::t_d1c63a420cbfb6 2,9-10,37-40,44-45,48,51-53
+src/server/post.ts
+  s_c7c294ddcc30bc::t_245752a66d1f7c 1-48
+typings/project.d.ts
+  s_c7c294ddcc30bc::t_a9c482f9b7788d 3-4
+src/pages/setting/banner/index.tsx
+  s_c7c294ddcc30bc::t_3608d000156011 3
+src/pages/setting/announcements/index.tsx
+  s_c7c294ddcc30bc::t_d1c63a420cbfb6 3,21,26,29,34-39,43,57-59,62-68,71,91
+src/pages/thread/proposal/index.tsx
+  s_c7c294ddcc30bc::t_0cca54d5d788e5 6-7,15,17,21,25,40-48,52,54-62,66-69,71-72,74-77,79,81-89,105-106
+src/pages/thread/list/index.tsx
+  s_c7c294ddcc30bc::t_bf4726b620886e 6-7,30,39-41,43-50,53-62,158,160-165
+src/utils/recipients.ts
+  s_c7c294ddcc30bc::t_cec05341bb869c 14,17
+src/pages/place/badge/UserBadgeDetail.tsx
+  s_c7c294ddcc30bc::t_efc635b2fb5afc 5-8,12,14-15,19-20,22-23,26,29-31,35,48,50-52
+src/pages/setting/node/index.tsx
+  s_c7c294ddcc30bc::t_3608d000156011 3
+src/pages/place/badge/AddBadgeModal.tsx
+  s_c7c294ddcc30bc::t_d2e1258616a077 1-3,5,7-8,10-16,18-34,41,43,51-55,57-71,77,91-115
+src/components/Quill/index.tsx
+  s_c7c294ddcc30bc::t_d1c63a420cbfb6 2,66
+src/pages/setting/announcements/edit/[id].tsx
+  s_c7c294ddcc30bc::t_d1c63a420cbfb6 3,20,23-31,48,51-52
+src/server/rice/index.ts
+  s_c7c294ddcc30bc::t_aabce6db91f96c 205-211
+src/pages/place/badge/index.tsx
+  s_c7c294ddcc30bc::t_aabce6db91f96c 6-8,20-22,25-26,41-42
+src/pages/setting/proposal/index.tsx
+  s_c7c294ddcc30bc::t_1adc9b8e79982d 6,13,50-56,60-62,69
+src/pages/thread/proposal/PostDetailDrawer.tsx
+  s_c7c294ddcc30bc::t_035a603da34689 2,6,22-28,30,32-33,35-36,39-45,61,71,74-75,78,84-85,88-89,99,107-108,114-115,132-133,137,142
+src/pages/setting/announcements/new/index.tsx
+  s_c7c294ddcc30bc::t_d1c63a420cbfb6 3,29,32-33
+vite.config.ts
+  s_c7c294ddcc30bc::t_a3f9035c99520a 60-65
+src/server/rice/index.test.ts
+  s_c7c294ddcc30bc::t_e92b5b421908e2 1-23,30,32,34-35,39-92,94-109,111,116-159,161-164,173-189,191-200
+  s_c7c294ddcc30bc::t_6a02c680eaf917 24-29,31,33,36-38
+  s_c7c294ddcc30bc::t_7650743ed411d1 93,110,112-115,160,165-172,190
+src/pages/place/foundation/index.tsx
+  s_c7c294ddcc30bc::t_bc1b7f93e84a33 7,14,18-22,54-60,64-66,73,81,91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "93af314d7a9d3d4cc6646f7de46c348f6419b9dd",
+  "prompts": {},
+  "sessions": {
+    "s_c7c294ddcc30bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4902de79-d943-413e-b8b7-c5a851e32947",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
