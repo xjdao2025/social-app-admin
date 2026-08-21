@@ -1,0 +1,23 @@
+# 依赖由 build 阶段的 `npm ci` 在容器内安装。宿主机这份 440M 的副本
+# 带进构建上下文毫无用处，而且平台可能不一致（本机 arm64、镜像 amd64）。
+node_modules
+
+# 上一次本地构建的产物。`npm run build` 会重新生成，带进去只是让上下文变大，
+# 且万一 vite 的输出目录改名，旧产物会作为幽灵文件留在镜像里。
+dist
+dist-ssr
+
+# ⚠️ 不要在这里加 .env。
+# 它是 git 跟踪的，装着构建期就要读的 Vite 变量（VITE_NETWORK / VITE_CDN_HOST），
+# `npm run build` 靠它把值编译进产物。排除掉不会报错，只会**静默**产出一份
+# 配置错误的前端包。（social-app 的 .dockerignore 排除了 .env，那边是对的：
+# 它的构建期变量走 ARG，不读 .env。两个仓库不要互相照抄。）
+
+.git
+.github
+.vscode
+.idea
+
+*.log
+.DS_Store
+coverage
