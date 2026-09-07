@@ -1,0 +1,66 @@
+src/components/user-account/index.tsx
+  s_becf616275efd9::t_eeae1e35a071f0 2,14
+src/components/Quill/index.tsx
+  s_becf616275efd9::t_c45db30d56cc26 9-11
+src/main.tsx
+  s_becf616275efd9::t_4707445a8d2d3d 30-33,38
+src/utils/recipients.ts
+  s_becf616275efd9::t_e742fcbb4a545d 1,18-25
+src/pages/place/foundation/index.tsx
+  s_becf616275efd9::t_6c2043089a9785 12
+src/pages/setting/proposal/index.tsx
+  s_becf616275efd9::t_6c2043089a9785 10
+src/pages/thread/proposal/index.tsx
+  s_becf616275efd9::t_d5ea49e405716c 8
+src/hooks/useI18nChange.ts
+  s_becf616275efd9::t_eeae1e35a071f0 1
+package.json
+  s_becf616275efd9::t_4dc471b07cf69c 8
+src/pages/thread/index.tsx
+  s_becf616275efd9::t_5f1abefe09c602 4-7,10
+src/pages/thread/proposal/PostDetailDrawer.tsx
+  s_becf616275efd9::t_6c2043089a9785 21
+src/components/styled-components/ProFormUpload/index.tsx
+  s_becf616275efd9::t_eeae1e35a071f0 1
+  s_becf616275efd9::t_c8df3711328627 106-110,112,114-115,117,152
+src/utils/tool.ts
+  s_becf616275efd9::t_4e3e47e856a7b5 1
+src/utils/recipients.test.ts
+  s_becf616275efd9::t_ccd08379c04edf 3-5,7
+src/pages/thread/list/PostDetailDrawer.tsx
+  s_becf616275efd9::t_8e2adf28ae0772 10-18
+  s_becf616275efd9::t_6d75f5d3958d7b 31,78,81
+src/pages/thread/list/utils.ts
+  s_becf616275efd9::t_4e3e47e856a7b5 3-6,9-10,15-17
+src/utils/pro-column-builder/index.tsx
+  s_becf616275efd9::t_eeae1e35a071f0 3
+src/pages/_app.tsx
+  s_becf616275efd9::t_e702a297b049b7 4-7,164
+  s_becf616275efd9::t_32cf8463f3c56f 68
+  s_becf616275efd9::t_d5ea49e405716c 2-3,162
+src/pages/thread/list/index.tsx
+  s_becf616275efd9::t_c45db30d56cc26 18
+src/components/styled-components/ProFormUploadFile/index.tsx
+  s_becf616275efd9::t_f38565674ef91b 79-80
+  s_becf616275efd9::t_eeae1e35a071f0 1-2
+src/components/lan-picker/index.tsx
+  s_becf616275efd9::t_674cd9860a321e 8-21
+src/store/i18n.ts
+  s_becf616275efd9::t_74bf167a6a9b14 4,15-28,31-34,36-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "9d14147391efe2a48b57c49d5b68131f961c5114",
+  "prompts": {},
+  "sessions": {
+    "s_becf616275efd9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "175c61c7-874e-4cb5-b3fe-f0ca3447255e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
