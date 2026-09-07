@@ -14,11 +14,6 @@ export enum CURRENCY_TYPE_CODE {
   USDI = 3
 }
 
-export enum USER_ROLE_TYPE {
-  ADMIN = 1,
-  OPERATION
-}
-
 export const CURRENCY_NAME = {
   [CURRENCY_TYPE_CODE.USDT]: 'USDT',
   [CURRENCY_TYPE_CODE.USDC]: 'USDC',

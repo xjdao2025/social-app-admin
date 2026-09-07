@@ -22,7 +22,6 @@ import UserAccount from "@/components/user-account";
 import { ReactNode, useEffect } from "react";
 import { Link } from "@/router";
 import useUserInfoStore from "@/store/userInfo";
-import { USER_ROLE_TYPE } from "@/utils/constants.ts";
 
 
 export default function Layout() {
@@ -90,7 +89,10 @@ function AuthedLayout({ children }) {
         params: { userInfo },
         locale: false,
         async request() {
-          const adminAuth = userInfo?.role === USER_ROLE_TYPE.ADMIN
+          // rice 的 role 是字符串 'admin' | 'operator'。老 core 时代这里是数字
+          // 枚举 USER_ROLE_TYPE.ADMIN(=1),迁移时漏改,'admin' === 1 恒 false,
+          // 于是「投放管理」和「管理员管理」两组菜单对所有人隐藏。
+          const adminAuth = userInfo?.role === 'admin'
           return [
             {
               name: '帖子管理',
