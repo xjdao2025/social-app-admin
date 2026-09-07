@@ -1,0 +1,19 @@
+src/pages/_app.tsx
+  s_becf616275efd9::t_61fd7301b18bb4 92-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "cdfedb265d93b82a52a9e9ff74123d8016d6cc6f",
+  "prompts": {},
+  "sessions": {
+    "s_becf616275efd9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "175c61c7-874e-4cb5-b3fe-f0ca3447255e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
