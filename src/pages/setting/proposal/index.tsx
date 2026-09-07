@@ -7,7 +7,7 @@ import server, { RiceError, type SiteSettings } from "@/server/rice";
 import { useEffect } from "react";
 
 const ProposalSetting = () => {
-  const [editable, { toggle, setTrue, setFalse }] = useBoolean(false)
+  const [editable, { setTrue, setFalse }] = useBoolean(false)
   const [form] = Form.useForm()
 
   const { data: globalConfig, refresh: updateGlobalConfig } = useRequest(() => server.settings.get())

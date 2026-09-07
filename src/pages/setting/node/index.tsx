@@ -113,7 +113,6 @@ const Nodes = () => {
         />
       ]}
       pagination={{
-        showTotal: false,
         hideOnSinglePage: true
       }}
     />

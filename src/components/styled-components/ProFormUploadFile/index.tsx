@@ -1,5 +1,5 @@
-import { Button, GetProp, Image, message, Upload, UploadProps } from 'antd';
-import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
+import { Button, message, Upload } from 'antd';
+import { UploadOutlined } from "@ant-design/icons";
 import S from './index.module.less';
 import { ProFormItem } from "@ant-design/pro-components";
 import { FieldProps } from "rc-field-form/lib/Field";
@@ -49,7 +49,6 @@ type StyledUploadProps = {
 type StyledUploadFormProps = {
   className?: string;
   children?: React.ReactNode;
-  responseType?: 'id' | 'full'
 } & StyledUploadProps
 
 const StyledUpload = (props: StyledUploadFormProps) => {
@@ -61,8 +60,6 @@ const StyledUpload = (props: StyledUploadFormProps) => {
     accept,
     maxSize,
     disabled,
-    responseType = 'full',
-    ...rest
   } = props;
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -79,7 +76,8 @@ const StyledUpload = (props: StyledUploadFormProps) => {
       }, {} as Record<string, UploadFile>);
 
       // rice 的附件 id 就是 id。core 那边 id 里编着 `类型-真实id-文件名`,
-      // 所以有个 responseType 决定要不要拆开 —— 现在没什么可拆的了。
+      // 所以曾经有个 responseType prop 决定要不要拆开;迁到 rice 后没什么可拆的,
+      // 它既没人传也没人读,已经删掉。
       return fileIdList.map((fileId: string) => {
         const url = server.attachments.url(fileId);
 

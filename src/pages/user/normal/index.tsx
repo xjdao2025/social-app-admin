@@ -94,7 +94,6 @@ const UserNormal = () => {
       // core 的五个搜索接口在 rice 这里是同一个 q:昵称 / handle / DID / 邮箱 / 手机号
       request={tableRequest(query => server.users.list({ ...query, node_member: false }))}
       pagination={{
-        showTotal: false,
         hideOnSinglePage: true,
         pageSize: 15,
       }}

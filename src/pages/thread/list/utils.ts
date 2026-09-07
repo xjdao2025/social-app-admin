@@ -1,14 +1,20 @@
 const postTags = ['任务','商品','活动']
 
+/** app.bsky.richtext.facet 的一段。这里只关心 tag 分支,其余 $type 原样带过。 */
+type Feature = { $type: string; tag?: string }
+type Facet = { features?: Feature[] }
+
 export const getPostTag = (postRecord: Record<string, any>): string[]  => {
   if (!postRecord.facets) return []
-  const allFeatures = postRecord.facets.reduce((acc, cur) => {
-    const features = cur.features.filter(f => f.$type === "app.bsky.richtext.facet#tag")
+  const allFeatures = (postRecord.facets as Facet[]).reduce<Feature[]>((acc, cur) => {
+    const features = (cur.features ?? []).filter(f => f.$type === "app.bsky.richtext.facet#tag")
 
     return acc.concat(features)
   }, [])
 
-  const tags = allFeatures.filter(f => postTags.includes(f.tag)).map(f => f.tag)
+  const tags = allFeatures
+    .map(f => f.tag)
+    .filter((tag): tag is string => !!tag && postTags.includes(tag))
 
   return tags
 }

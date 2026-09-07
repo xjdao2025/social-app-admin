@@ -27,11 +27,15 @@ createRoot(document.getElementById('root')!).render(
 
 function Inner() {
   const { i18n } = useTranslation();
+  // 这个值原本算出来就没人用，locale 硬编码成 zhCN —— 接上去不改变任何行为:
+  // i18n 的 lng 被显式设成 store 的 language(i18n/index.ts:19)，压过
+  // LanguageDetector；而 language 恒为 FALLBACK_LNG = zh_CN，因为唯一的写入口
+  // components/lan-picker 是关着的。真要做多语言时这里已经是对的。
   const antdLan = i18n.language.indexOf('zh') !== -1 ? zhCN : enUS;
   return (
     <ConfigProvider
       renderEmpty={(componentName) => <Empty componentName={componentName} />}
-      locale={zhCN}
+      locale={antdLan}
       theme={{
         // cssVar: true,
         token: {

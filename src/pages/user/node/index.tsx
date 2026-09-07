@@ -114,7 +114,6 @@ const NodeUser = () => {
       columns={columns}
       request={tableRequest(query => server.users.list({ ...query, node_member: true }))}
       pagination={{
-        showTotal: false,
         pageSize: 15,
         hideOnSinglePage: true
       }}

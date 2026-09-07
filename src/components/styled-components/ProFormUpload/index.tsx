@@ -1,4 +1,4 @@
-import { GetProp, Image, message, Upload, UploadProps } from 'antd';
+import { Image, message, Upload, UploadProps } from 'antd';
 import { PlusOutlined } from "@ant-design/icons";
 import S from './index.module.less';
 import { ProFormItem } from "@ant-design/pro-components";
@@ -103,15 +103,18 @@ const StyledUpload = (props: StyledUploadFormProps) => {
   }, [value])
 
   const beforeUpload = (file: any) => {
-    // const limitSize = maxSize ?? 5;
-    let limitSize = maxSize ?? 5;
+    // 判断一律走 limitSize,不要回头再读 maxSize —— 原来算出了 limitSize 却在
+    // 下面接着用 `+maxSize`,于是 maxSize 省略时是 `size > NaN`,恒为 false,
+    // 那个 5MB 的默认值从来没生效过。现在四个调用点都显式传了 5,所以这次
+    // 改动不改变任何现有行为,只是把默认值真正接上。
+    const limitSize = maxSize ?? 5;
     let isReachLimit = false;
-    const isNoNumber = isNaN(+maxSize);
+    const isNoNumber = isNaN(+limitSize);
 
-    if (isNoNumber && typeof maxSize === 'string' && maxSize.includes('kb')) {
-      isReachLimit = file.size / 1024 > +maxSize.replace('kb', '');
+    if (isNoNumber && typeof limitSize === 'string' && limitSize.includes('kb')) {
+      isReachLimit = file.size / 1024 > +limitSize.replace('kb', '');
     } else {
-      isReachLimit = file.size / 1024 / 1024 > +maxSize;
+      isReachLimit = file.size / 1024 / 1024 > +limitSize;
     }
 
     if (isReachLimit) {
@@ -146,7 +149,7 @@ const StyledUpload = (props: StyledUploadFormProps) => {
         return node;
       }}
       onPreview={v => {
-        setPreviewImage(v.url || v.thumbUrl);
+        setPreviewImage(v.url || v.thumbUrl || '');
         setPreviewOpen(true);
       }}
       fileList={fileList}

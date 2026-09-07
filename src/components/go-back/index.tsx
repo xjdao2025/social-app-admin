@@ -1,6 +1,5 @@
 import { CSSProperties } from "react";
 import styles from './index.module.less';
-import { useTranslation } from "react-i18next";
 import classNames from "classnames";
 
 type GoBackProps = {
@@ -12,7 +11,6 @@ type GoBackProps = {
 
 export default function GoBack(props: GoBackProps) {
   const { className, style, onClick } = props;
-  const { t } = useTranslation();
 
   return (
     <div className={classNames(styles.goBack, className)} style={style} onClick={onClick}>

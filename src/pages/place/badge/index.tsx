@@ -41,7 +41,6 @@ const BadgePlace = () => {
       rowKey="id"
       request={tableRequest(query => server.badges.list(query))}
       pagination={{
-        showTotal: false,
         hideOnSinglePage: true
       }}
     />

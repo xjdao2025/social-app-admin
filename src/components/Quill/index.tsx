@@ -6,7 +6,9 @@ import "quill/dist/quill.core.css";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import "quill/dist/quill.snow.css";
 
-const AlignStyle = Quill.import('attributors/style/align');
+// Quill 的类型把 import() 声明成返回 unknown（路径决定实际类型，它无从推断）。
+// 这里注册的是 style/align 属性器,交给 register 的第一个重载。
+const AlignStyle = Quill.import('attributors/style/align') as Parameters<typeof Quill.register>[0];
 Quill.register(AlignStyle, true);
 
 type QuillEditorProps = {

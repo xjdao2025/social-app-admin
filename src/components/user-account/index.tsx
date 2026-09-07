@@ -1,20 +1,17 @@
 import styles from './index.module.less';
-import { Divider, Popover, Upload } from 'antd';
+import { Popover } from 'antd';
 import Icon_Logout from './assets/logout.svg?react';
 import Icon_ChangePass from './assets/change-password.svg?react';
 import NavIcon_Arrow from '@/assets/nav.arrow.svg?react';
 import { useState } from 'react';
 import classNames from 'classnames';
-import { useTranslation } from 'react-i18next';
 import useCurrentUserInfo from '@/hooks/useCurrentUserInfo';
 import { useNavigate } from '@/router';
-import { encryptEmail } from '@/utils/tool';
 
 const UserAccount = () => {
   const [isOpened, setIsOpened] = useState(false);
-  const { t } = useTranslation("translation");
   const navigate = useNavigate();
-  const { userInfo, logout, fetchUserInfo } = useCurrentUserInfo();
+  const { userInfo, logout } = useCurrentUserInfo();
 
   const content = (<div>
     <div className={styles.item} onClick={() => navigate("/change-password")}>

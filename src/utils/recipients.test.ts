@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
+// 这里 mock 的是 `readSheet`(返回 Row[]),不是默认导出 —— v9 的默认导出返回
+// 的是工作表数组 `[{sheet,data}]`。之前 mock 的是默认导出并让它返回行,于是
+// 测试里的形状和运行时的形状不一致,恒返回 [] 的那个 bug 在这里是看不见的。
 const readXlsxFile = vi.hoisted(() => vi.fn())
-vi.mock('read-excel-file/browser', () => ({ default: readXlsxFile }))
+vi.mock('read-excel-file/browser', () => ({ readSheet: readXlsxFile }))
 
 const { parseRecipients } = await import('./recipients')
 

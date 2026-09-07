@@ -57,7 +57,6 @@ const UserBadgeDetail = (props: {
         }}
         pagination={{
           pageSize: 10,
-          showTotal: false,
           hideOnSinglePage: true,
         }}
       />

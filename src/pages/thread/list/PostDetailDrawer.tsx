@@ -7,6 +7,15 @@ import OssImage from "@/components/oss-image";
 import { useMemo } from "react";
 import { getPostTag } from "@/pages/thread/list/utils.ts";
 
+/** app.bsky.richtext.facet 里我们用到的部分。 */
+type Facet = {
+  index: { byteStart: number; byteEnd: number }
+  features: { $type: string; uri?: string; did?: string }[]
+}
+
+/** app.bsky.embed.images#view 的一张图。 */
+type EmbedImage = { fullsize: string }
+
 const PostDetailDrawer = ({ post = {}, takeOff }: {
   post: any
   takeOff: () => void
@@ -19,7 +28,7 @@ const PostDetailDrawer = ({ post = {}, takeOff }: {
     const originText = post.record?.text
     const originTextUnit8 = new TextEncoder().encode(originText)
 
-    const newText = (post.record.facets || []).reduce((acc, facet) => {
+    const newText = ((post.record.facets || []) as Facet[]).reduce<string>((acc, facet) => {
       const { byteStart, byteEnd } = facet.index
       const feature = facet.features[0]
       if (["app.bsky.richtext.facet#link", "app.bsky.richtext.facet#mention"].includes(feature.$type)) {
@@ -66,10 +75,10 @@ const PostDetailDrawer = ({ post = {}, takeOff }: {
       </div>
       <pre className={S.postContent} dangerouslySetInnerHTML={{ __html: constructHtml }} />
       <div className={'flex gap-[3px]'}>
-        {post.embed?.media?.images?.map(image => {
+        {post.embed?.media?.images?.map((image: EmbedImage) => {
           return <OssImage attachId={image.fullsize} srcType={'url'} className={'flex-1 max-h-[250px]'} preview />
         })}
-        {post.embed?.images?.map(image => {
+        {post.embed?.images?.map((image: EmbedImage) => {
           return <OssImage attachId={image.fullsize} srcType={'url'} className={'flex-1 max-h-[250px]'} preview />
         })}
       </div>

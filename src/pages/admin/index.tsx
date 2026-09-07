@@ -62,7 +62,6 @@ const User = () => {
       rowKey="id"
       request={tableRequest(query => server.admins.list(query))}
       pagination={{
-        showTotal: false,
         hideOnSinglePage: true
       }}
     />

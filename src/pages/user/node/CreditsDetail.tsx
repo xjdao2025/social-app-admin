@@ -122,7 +122,6 @@ const CreditsDetail = (props: {
         request={tableRequest(query => server.users.transfers(userId, query))}
         pagination={{
           pageSize: 10,
-          showTotal: false,
           hideOnSinglePage: true,
         }}
       />

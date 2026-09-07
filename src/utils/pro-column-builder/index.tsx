@@ -1,7 +1,6 @@
 import { ProColumns } from '@ant-design/pro-components';
-import { Image } from 'antd';
 import dayjs from 'dayjs';
-import { ComponentProps, ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 /**
  * ProColumn函数式写法

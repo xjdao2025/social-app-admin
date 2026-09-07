@@ -1,4 +1,4 @@
-import readXlsxFile from 'read-excel-file/browser'
+import { readSheet } from 'read-excel-file/browser'
 
 /**
  * 从批量发放的名单里读出收款人。
@@ -15,7 +15,14 @@ import readXlsxFile from 'read-excel-file/browser'
  * 没收到东西,没有任何人会发现。所以这里只丢确定该丢的。
  */
 export async function parseRecipients(file: File): Promise<string[]> {
-  const rows = (await readXlsxFile(file)) as unknown[][]
+  // 用 readSheet 而不是默认导出。read-excel-file v9 的默认导出返回的是
+  // **工作表数组** `[{ sheet, data }]`,不是行数组 —— 原来的
+  // `readXlsxFile(file) as unknown[][]` 把它硬断言成行,于是
+  // `row?.[0]` 取到的是 `{sheet,data}` 上不存在的下标 0,每一行都成了空串,
+  // 整个函数恒返回 []:名单导入永远是 0 个人,而且不报错。
+  // 那个 `as unknown[][]` 正是 tsc 一直在拒绝的断言(TS2352)。
+  // readSheet 返回的才是 Row[]。
+  const rows = await readSheet(file)
 
   const values = rows.map(row => cell(row?.[0])).filter(value => value !== '')
   const [first, ...rest] = values

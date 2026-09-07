@@ -1,4 +1,4 @@
-export function encryptEmail(val) {
+export function encryptEmail(val?: string) {
   if (!val) return '';
   const [p1, p2] = val.split('@');
   if (!p2 || (p1.length < 6)) return val;

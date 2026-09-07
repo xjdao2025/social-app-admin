@@ -2,7 +2,6 @@ import emtpyImg from '@/assets/list.no-data.svg';
 import styles from './empty.module.less';
 import { CSSProperties, ReactNode } from 'react';
 import classNames from 'classnames';
-import { useTranslation } from 'react-i18next';
 
 type EmptyProps = {
   className?: string;
@@ -15,7 +14,6 @@ type EmptyProps = {
 
 export default function Empty(props: EmptyProps) {
   const { text, tips, className, style, componentName } = props;
-  const { t } = useTranslation("component.empty")
   return (
     <div className={classNames(styles.empty, styles[componentName?.toLocaleLowerCase() ?? ''] , className)} style={style}>
       <img src={emtpyImg} />

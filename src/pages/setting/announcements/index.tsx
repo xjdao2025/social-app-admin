@@ -97,7 +97,6 @@ const Announcements: FC = () => {
         </RouteLink>
       ] }
       pagination={ {
-        showTotal: false,
         hideOnSinglePage: true
       } }
     />

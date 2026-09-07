@@ -110,7 +110,6 @@ const Apps = () => {
       ] }
       pagination={ {
         pageSize: 1e10,
-        showTotal: false,
         hideOnSinglePage: true
       } }
     />

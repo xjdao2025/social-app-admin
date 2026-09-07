@@ -5,7 +5,7 @@ import { Badge, Flex, message, Popconfirm, Typography } from 'antd'
 import PostDetailDrawer from "./PostDetailDrawer.tsx";
 import server, { RiceError, type Proposal } from "@/server/rice";
 import { tableRequest } from "@/server/rice/table";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { ActionType } from "@ant-design/pro-table/es/typing";
 import dayjs from "dayjs";
 import InitiatorAvatar from "./InitiatorAvatar.tsx";
@@ -105,7 +105,6 @@ const PostList = () => {
       rowKey="id"
       request={tableRequest(query => server.proposals.list(query))}
       pagination={{
-        showTotal: false,
         hideOnSinglePage: true,
       }}
     />

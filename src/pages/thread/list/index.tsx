@@ -15,7 +15,7 @@ import { ActionType } from "@ant-design/pro-table/es/typing";
 
 const { Link } = Typography;
 
-const tagValueEnum = {
+const tagValueEnum: Record<number, string> = {
   1: '任务',
   2: '商品',
   3: '活动'
@@ -180,7 +180,6 @@ const PostList = () => {
         }
       }}
       pagination={{
-        showTotal: false,
         pageSize: 10,
         showSizeChanger: false,
       }}

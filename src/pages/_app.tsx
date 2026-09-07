@@ -1,7 +1,10 @@
 import LanPicker from "@/components/lan-picker";
-import { ProConfigProvider, ProLayout } from "@ant-design/pro-components";
-import { Button, Space, theme } from "antd";
-import { Outlet, useLocation } from 'react-router-dom';
+import { ProLayout } from "@ant-design/pro-components";
+import { Space, theme } from "antd";
+// 菜单项的 path 是 ProLayout 在运行时给的普通 string,而 `@/router` 那个
+// 生成的 Link 要的是 { to, params } 的判别联合(路由表里的字面量)。这里的路径
+// 本来就是动态的,用 react-router 的 Link,类型才对得上。
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import './global.less';
 import styles from './app.module.less';
 import NavIcon_Post from '@/assets/nav/post.svg?react';
@@ -20,7 +23,6 @@ import classNames from "classnames";
 import LoginView from "@/components/login-page";
 import UserAccount from "@/components/user-account";
 import { ReactNode, useEffect } from "react";
-import { Link } from "@/router";
 import useUserInfoStore from "@/store/userInfo";
 
 
@@ -63,7 +65,7 @@ function InjectCssVarFromAntdToken() {
   return null;
 }
 
-function AuthedLayout({ children }) {
+function AuthedLayout({ children }: { children: React.ReactNode }) {
   const { token, userInfo } = useUserInfoStore();
 
   const currentPath = useLocation().pathname;
@@ -157,9 +159,9 @@ function AuthedLayout({ children }) {
         className: styles.menu,
         inlineIndent: 24,
       }}
-      menuItemRender={(item, dom, menuProps) => {
+      menuItemRender={(item, dom) => {
         return (
-          <Link to={{ pathname: item.path! }}>
+          <Link to={item.path!}>
             {dom}
           </Link>
         );

@@ -53,7 +53,6 @@ const PlacePoints = () => {
         collapseRender: false,
       }}
       pagination={{
-        showTotal: false,
         hideOnSinglePage: true
       }}
     />

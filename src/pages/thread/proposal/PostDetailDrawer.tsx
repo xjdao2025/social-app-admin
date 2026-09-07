@@ -18,7 +18,7 @@ const PostDetailDrawer = (props:
                               takeDown: () => void
                             }
 ) => {
-  const [drawerVis, { toggle, setTrue, setFalse }] = useBoolean(false)
+  const [drawerVis, { setTrue, setFalse }] = useBoolean(false)
   const { data: detail, refresh } = useRequest(
     () => server.proposals.get(props.proposalId),
     {

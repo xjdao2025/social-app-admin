@@ -1,6 +1,4 @@
 import styles from './index.module.less';
-import bgImg from './assets/bg.png';
-import { useTranslation } from 'react-i18next';
 import { ConfigProvider } from 'antd';
 import { useState } from 'react';
 import LanPicker from '../lan-picker';
@@ -35,7 +33,6 @@ export default function LoginView() {
 
 
 function LoginFooter() {
-  const { t } = useTranslation("component.login");
 
   return (
     <>
