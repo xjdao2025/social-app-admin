@@ -6,7 +6,7 @@ import S from './index.module.less'
 import { useBoolean, useRequest } from "ahooks";
 import server, { RiceError } from "@/server/rice";
 import { toSettingsPayload, type FoundationFields } from "./payload";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 const FoundationSetting = () => {
   const [editable, { setTrue, setFalse }] = useBoolean(false)
@@ -22,6 +22,14 @@ const FoundationSetting = () => {
       document_ids: globalConfig.documents.map(doc => doc.id),
     })
   }, [globalConfig])
+
+  // 表单值里只有附件 id,文件名在 `globalConfig.documents` 上,单独喂给控件。
+  // 必须 memo —— 每次 render 新建一个对象的话,控件里那个依赖它的 useEffect
+  // 会每次都跑,进而每次 setFileList。
+  const documentNames = useMemo(
+    () => Object.fromEntries((globalConfig?.documents ?? []).map(doc => [doc.id, doc.filename])),
+    [globalConfig],
+  )
 
   const submit = () => {
     form.submit();
@@ -86,6 +94,7 @@ const FoundationSetting = () => {
           buttonText={'上传PDF'}
           accept={'.pdf'}
           name={'document_ids'}
+          fileNames={documentNames}
         />
       </ProForm>
     </ProCard>

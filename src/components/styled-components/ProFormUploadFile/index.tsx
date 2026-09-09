@@ -44,6 +44,18 @@ type StyledUploadProps = {
   value?: string | string[],
   onChange?: (value: string[] | string) => void;
   buttonText: string
+  /**
+   * 附件 id → 文件名。**表单值只有 id**,拿不到名字。
+   *
+   * 表单值的形状不能动:`document_ids` 在 rice 那边是整份替换,
+   * `place/foundation/payload.ts` 的三态判断(不传 / 空数组 / 有值)全建立在
+   * 「值是 id 数组」这个前提上,改成对象会把那段逻辑连带弄坏,而代价是
+   * 一次误操作删掉全部已公示文件。所以名字走一个独立的旁路 prop。
+   *
+   * 没传的 id 退回空名字 —— 也就是修这个之前所有已有附件的样子:
+   * 一排只有回形针、没有文字的空行。
+   */
+  fileNames?: Record<string, string>;
 };
 
 type StyledUploadFormProps = {
@@ -60,6 +72,7 @@ const StyledUpload = (props: StyledUploadFormProps) => {
     accept,
     maxSize,
     disabled,
+    fileNames,
   } = props;
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -87,14 +100,14 @@ const StyledUpload = (props: StyledUploadFormProps) => {
 
         return ({
           uid: fileId,
-          name: '',
+          name: fileNames?.[fileId] ?? '',
           response: fileId,
           url,
           status: 'done' as const
         })
       })
     });
-  }, [value])
+  }, [value, fileNames])
 
   const beforeUpload = (file: any) => {
     if (!maxSize) return true
