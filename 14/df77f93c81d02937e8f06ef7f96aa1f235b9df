@@ -1,0 +1,21 @@
+src/pages/place/foundation/index.tsx
+  s_becf616275efd9::t_d2db8d8430d60c 9,26-33,97
+src/components/styled-components/ProFormUploadFile/index.tsx
+  s_becf616275efd9::t_ae8f8e973e7fe9 47-58,75,103,110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "14df77f93c81d02937e8f06ef7f96aa1f235b9df",
+  "prompts": {},
+  "sessions": {
+    "s_becf616275efd9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "175c61c7-874e-4cb5-b3fe-f0ca3447255e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "jiangplus <jiang.plus.times@gmail.com>"
+    }
+  }
+}
