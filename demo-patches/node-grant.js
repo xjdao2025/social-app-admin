@@ -39,7 +39,7 @@ NodeGrantForm = ({ reload }) => {
     }
 
     requestId.current = null;
-    reload();
+    Promise.resolve().then(reload).catch(() => {});
     try {
       const node = await ln.catalog.get("nodes", values.node_id);
       Yt.success(`已发放给 ${node.name}，当前余额 ${node.grain_balance}`);

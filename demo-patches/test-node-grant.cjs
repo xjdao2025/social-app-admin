@@ -68,6 +68,7 @@ const render = () => {
   assert.equal(requests.length, 2);
   assert.deepEqual(requests.map(request => request.body.client_request_id), ["request-1", "request-1"]);
   assert.equal(requests[1].id, "node-1");
+  await new Promise(setImmediate);
   assert.equal(reloads, 1);
   console.log("Node grant form retries one transaction and reloads the Rice record");
 })().catch(error => { console.error(error); process.exitCode = 1; });
