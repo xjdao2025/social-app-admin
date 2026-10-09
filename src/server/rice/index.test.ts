@@ -2,7 +2,7 @@ import MockAdapter from 'axios-mock-adapter'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import storage from '@/utils/stroage'
 import instance from './client'
-import server from './index'
+import server, { type Post } from './index'
 
 /**
  * 每个函数打到哪个方法、哪个路径。
@@ -157,22 +157,23 @@ describe('配置、模板与贴文', () => {
     expect(await called(() => server.templates.get())).toBe('GET /api/admin/templates')
   })
 
-  it('贴文下架和恢复是同一个路径的两个方法', async () => {
-    const uri = 'at://did:plc:abc/app.bsky.feed.post/123'
+  it('贴文列表、下架和恢复', async () => {
+    const post = { uri: 'at://did:plc:abc/app.bsky.feed.post/123', cid: 'bafyc' } as Post
 
-    expect(await called(() => server.posts.takeDown(uri))).toBe('POST /api/admin/post_takedowns')
-    expect(await called(() => server.posts.restore(uri))).toBe('DELETE /api/admin/post_takedowns')
+    expect(await called(() => server.posts.list({ tag: '#活动', page: 2 }))).toBe('GET /api/admin/posts')
+    expect(await called(() => server.posts.takeDown(post))).toBe('POST /api/admin/post_takedowns')
+    expect(await called(() => server.posts.restore(post))).toBe('DELETE /api/admin/post_takedowns')
   })
 
-  // uri 放 body 不放路径 —— AT URI 里有斜杠,塞进路径要转义两遍
-  it('uri 在 body 里,连 DELETE 也是', async () => {
-    const uri = 'at://did:plc:abc/app.bsky.feed.post/123'
+  // uri 放 body 不放路径 —— AT URI 里有斜杠,塞进路径要转义两遍;cid 一起定位到具体版本
+  it('uri 和 cid 在 body 里,连 DELETE 也是', async () => {
+    const post = { uri: 'at://did:plc:abc/app.bsky.feed.post/123', cid: 'bafyc', is_banned: false } as Post
 
-    await server.posts.takeDown(uri)
-    await server.posts.restore(uri)
+    await server.posts.takeDown(post)
+    await server.posts.restore(post)
 
-    expect(JSON.parse(mock.history.post[0].data)).toEqual({ uri })
-    expect(JSON.parse(mock.history.delete[0].data)).toEqual({ uri })
+    expect(JSON.parse(mock.history.post[0].data)).toEqual({ uri: post.uri, cid: 'bafyc' })
+    expect(JSON.parse(mock.history.delete[0].data)).toEqual({ uri: post.uri, cid: 'bafyc' })
   })
 })
 

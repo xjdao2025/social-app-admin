@@ -181,3 +181,24 @@ export interface PageQuery {
   per_page?: number
   [key: string]: unknown
 }
+
+/** 贴文:AppView 的 postView,加上审核服务给的下架状态。 */
+export interface Post {
+  uri: string
+  cid: string
+  author: { did: string; handle?: string; displayName?: string; avatar?: string }
+  record?: Record<string, unknown>
+  indexedAt?: string
+  is_banned: boolean
+  [key: string]: unknown
+}
+
+/** 后台贴文列表的筛选:正文、发布方(DID 或 handle)、标签、时间范围(sortAt)、是否已下架。 */
+export interface PostQuery extends PageQuery {
+  q?: string
+  author?: string
+  tag?: string
+  since?: string
+  until?: string
+  taken_down?: boolean
+}

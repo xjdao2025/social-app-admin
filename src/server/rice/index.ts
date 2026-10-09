@@ -14,6 +14,8 @@ import type {
   Grant,
   Node,
   PageQuery,
+  Post,
+  PostQuery,
   Proposal,
   ProposalDetail,
   SiteSettings,
@@ -233,14 +235,15 @@ export const templates = {
 }
 
 /**
- * 贴文下架 / 恢复。贴文不在 rice 库里,这只是一层代理 ——
- * 意义是 post 服务的管理凭据不必下发到浏览器。
+ * 贴文列表与下架 / 恢复。贴文不在 rice 库里,这只是一层到 aerox 审核服务的代理 ——
+ * 意义是审核服务的管理凭据不必下发到浏览器。
  *
- * uri 放 body 不放路径:AT URI 里有斜杠。
+ * 下架按 uri + cid 定位;放 body 不放路径:AT URI 里有斜杠。
  */
 export const posts = {
-  takeDown: (uri: string) => rice.post<void>('/api/admin/post_takedowns', { uri }),
-  restore: (uri: string) => rice.delete('/api/admin/post_takedowns', { data: { uri } }),
+  list: (query?: PostQuery) => rice.page<Post>('/api/admin/posts', query),
+  takeDown: ({ uri, cid }: Post) => rice.post<void>('/api/admin/post_takedowns', { uri, cid }),
+  restore: ({ uri, cid }: Post) => rice.delete('/api/admin/post_takedowns', { data: { uri, cid } }),
 }
 
 /**
