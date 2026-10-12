@@ -162,7 +162,7 @@ export const users = {
     rice.page<Transfer>(`/api/admin/users/${id}/grain_transfers`, query),
 }
 
-/** 发放稻米。core 的 single / batch 在这里是同一个接口 —— 收款人永远是数组。 */
+/** 发放稻米。core 的 single / batch 在这里是同一个接口 —— 接收节点永远是数组。 */
 export const grants = {
   list: (query?: PageQuery & { q?: string; since?: string; until?: string }) =>
     rice.page<Grant>('/api/admin/grain_grants', query),
@@ -175,13 +175,13 @@ export const grants = {
   challenge: () => rice.post<void>('/api/admin/grain_grants/challenge'),
 
   /**
-   * 全有或全无:任何一个收款人解析不出来,整批都不发。
+   * 全有或全无:任何一个节点不存在,整批都不增发。
    *
-   * `to` 里可以混着写手机号 / 邮箱 / handle / DID / id;空字符串会被丢掉。
+   * `node_ids` 指定节点，`client_request_id` 用于安全重试；不接受个人收款人。
    * 参数不合法时**不消耗验证码** —— 改掉笔误,同一个码接着用。
    */
-  create: (params: { to: string[]; amount: number; code: string; memo?: string }) =>
-    rice.post<{ granted: number }>('/api/admin/grain_grants', params),
+  create: (params: { node_ids: string[]; amount: number; code: string; memo?: string; client_request_id: string }) =>
+    rice.post<{ granted: number; replayed: boolean }>('/api/admin/grain_grants', params),
 }
 
 /** 提案审核。列表看得到已下架的 —— C 端那份看不到。 */

@@ -101,6 +101,7 @@ export type CatalogKind = 'apps' | 'banners' | 'announcements' | 'nodes'
 
 /** 一笔稻米发放。发放没有付款人,所以没有 from。 */
 export interface Grant {
+  to_node: { id: string; name: string } | null
   id: string
   amount: number
   memo: string | null

@@ -123,7 +123,7 @@ describe('用户与稻米', () => {
   it('发放的发码和发放是两个路径', async () => {
     expect(await called(() => server.grants.challenge()))
       .toBe('POST /api/admin/grain_grants/challenge')
-    expect(await called(() => server.grants.create({ to: ['a'], amount: 1, code: '1' })))
+    expect(await called(() => server.grants.create({ node_ids: ['a'], amount: 1, code: '1', client_request_id: 'request' })))
       .toBe('POST /api/admin/grain_grants')
   })
 })

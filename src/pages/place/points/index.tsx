@@ -20,9 +20,9 @@ const PlacePoints = () => {
     // core 有「接收者」和「手机号或邮箱」两个搜索框,rice 是一个 q 全找
     proColumn('接收者', 'q', { hideInTable: true })
       ._enableSearch()
-      ._extend({ fieldProps: { placeholder: '昵称 / 域名 / 手机号 / 邮箱' } }),
+      ._extend({ fieldProps: { placeholder: '节点名称 / ID / 历史收款人' } }),
     proColumn('接收者', 'to')
-      ._render((_, record: Grant) => record.to?.nickname || record.to?.handle || '—'),
+      ._render((_, record: Grant) => record.to_node?.name || (record.to ? `历史个人增发：${record.to.nickname || record.to.handle}` : '—')),
     proColumn('手机号', 'phone')
       ._render((_, record: Grant) => record.to?.phone || '—'),
     proColumn('邮箱', 'email')
@@ -35,7 +35,7 @@ const PlacePoints = () => {
     proColumn('附言', 'memo'),
   ]
 
-  return <Page title="发放稻米">
+  return <Page title="节点稻米增发">
     <ProTable
       actionRef={actionRef}
       headerTitle="列表"
